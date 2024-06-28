@@ -1,16 +1,14 @@
+import Appshell from "@components/molecules/Appshell";
+import { Route, Routes } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+
 function App() {
   return (
-    <>
-      <h1 className="text-3xl font-bold underline">Vite + React</h1>
-      <div className="card">
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Appshell>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+      </Routes>
+    </Appshell>
   );
 }
 
