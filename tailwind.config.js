@@ -10,24 +10,24 @@ export default {
       },
       colors: {
         primary: {
-          light: "#a8dadc",
-          DEFAULT: "#457b9d",
-          dark: "#1d3557",
+          light: "#64748b",
+          DEFAULT: "#1e293b",
+          dark: "#0f172a",
         },
         secondary: {
-          light: "#f1faee",
-          DEFAULT: "#a8dadc",
-          dark: "#457b9d",
+          light: "#cbd5e1",
+          DEFAULT: "#94a3b8",
+          dark: "#64748b",
         },
         accent: {
-          light: "#ffafcc",
-          DEFAULT: "#ff6b6b",
-          dark: "#c44536",
+          light: "#f87171",
+          DEFAULT: "#ef4444",
+          dark: "#b91c1c",
         },
         neutral: {
-          light: "#f5f5f5",
-          DEFAULT: "#d3d3d3",
-          dark: "#7d7d7d",
+          light: "#e5e7eb",
+          DEFAULT: "#374151",
+          dark: "#1f2937",
         },
         info: "#3ABFF8",
         success: "#36D399",
@@ -38,6 +38,6 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["winter"], // Enable the 'winter' theme
+    themes: ["sunset"],
   },
 };

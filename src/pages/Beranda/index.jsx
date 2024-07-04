@@ -1,7 +1,7 @@
 import Button from "@components/atoms/Button";
 import { Helmet } from "react-helmet-async";
 
-const HomePage = () => {
+const Beranda = () => {
   return (
     <div className="flex items-center justify-center h-screen">
       <Helmet>
@@ -16,4 +16,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default Beranda;

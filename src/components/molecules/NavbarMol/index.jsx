@@ -14,7 +14,7 @@ import {
   faLifeRing,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Navbar = () => {
+const NavbarMol = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const navbarRef = useRef(null);
@@ -85,7 +85,7 @@ const Navbar = () => {
         ref={dragHandleRef}
         className={`fixed ${
           isOpen ? "bottom-[390px] md:bottom-[150px]" : "bottom-6"
-        } left-1/2 transform -translate-x-1/2 h-2 pb-2 rounded-full cursor-pointer w-44 opacity-50 bg-primary-dark transition-all duration-300`}
+        } left-1/2 transform -translate-x-1/2 h-2 pb-2 rounded-full cursor-pointer w-44 opacity-80 bg-neutral transition-all duration-300`}
         onClick={() => setIsOpen(!isOpen)}
       ></div>
       <nav
@@ -231,4 +231,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NavbarMol;

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
-import Navbar from "../Navbar";
-import Avatar from "../Avatar";
+import Navbar from "../NavbarMol";
+import Avatar from "../AvatarMol";
 
 const Appshell = ({ children }) => {
   const disableShortcuts = (event) => {
@@ -49,7 +49,7 @@ const Appshell = ({ children }) => {
       "Control+Shift+B",
       "Control+D",
       "Control+Shift+D",
-      "Control+Shift+I",
+
       "Control+Shift+C",
       "Control+Shift+J",
     ];
@@ -83,7 +83,7 @@ const Appshell = ({ children }) => {
   return (
     <Router>
       <Avatar />
-      <div className="font-poppins">
+      <div className="m-auto font-poppins max-w-7xl">
         <HelmetProvider>{children}</HelmetProvider>
       </div>
       <Navbar />

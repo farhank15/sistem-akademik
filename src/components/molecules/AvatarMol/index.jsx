@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import supabase from "@/client/supabase";
 
-const Avatar = () => {
+const AvatarMol = ({ avatarUrl }) => {
   const [isCardOpen, setIsCardOpen] = useState(false);
   const cardRef = useRef(null);
   const avatarRef = useRef(null);
@@ -29,6 +30,21 @@ const Avatar = () => {
     setIsCardOpen((prev) => !prev);
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout gagal", error);
+      } else {
+        console.log("Logout berhasil");
+        // Redirect atau perbarui state setelah logout
+        window.location.reload(); // Reload halaman untuk mereset state
+      }
+    } catch (error) {
+      console.error("Error saat logout", error);
+    }
+  };
+
   return (
     <div className="fixed z-50 top-4 right-4">
       <div
@@ -37,7 +53,10 @@ const Avatar = () => {
         onClick={handleAvatarClick}
       >
         <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-          <img src="https://via.placeholder.com/150" alt="Avatar" />
+          <img
+            src={avatarUrl || "https://via.placeholder.com/150"}
+            alt="Avatar"
+          />
         </div>
       </div>
 
@@ -49,7 +68,7 @@ const Avatar = () => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full">
               <img
-                src="https://via.placeholder.com/150"
+                src={avatarUrl || "https://via.placeholder.com/150"}
                 alt="Avatar"
                 className="rounded-full"
               />
@@ -67,7 +86,10 @@ const Avatar = () => {
               <FontAwesomeIcon icon={faCog} />
               <span>Pengaturan Profil</span>
             </button>
-            <button className="flex items-center justify-start w-full mt-2 space-x-2 btn btn-outline btn-danger">
+            <button
+              className="flex items-center justify-start w-full mt-2 space-x-2 btn btn-outline btn-danger"
+              onClick={handleLogout}
+            >
               <FontAwesomeIcon icon={faSignOutAlt} />
               <span>Logout</span>
             </button>
@@ -78,4 +100,4 @@ const Avatar = () => {
   );
 };
 
-export default Avatar;
+export default AvatarMol;

@@ -8,6 +8,7 @@ const Button = ({
   variant = "",
   size = "md",
   disabled = false,
+  icon = null,
 }) => {
   const baseStyles =
     "btn inline-flex items-center justify-center font-medium rounded focus:outline-none transition duration-150 ease-in-out";
@@ -39,6 +40,7 @@ const Button = ({
       className={combinedStyles}
       disabled={disabled}
     >
+      {icon && <span className="mr-2">{icon}</span>}
       {name}
     </button>
   );
