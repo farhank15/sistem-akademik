@@ -7,6 +7,7 @@ import Paragraph from "@components/atoms/Paragraph";
 import { Link } from "react-router-dom";
 import supabase from "@/client/supabase";
 import Google from "@assets/Icons/google.svg";
+import Bg from "@assets/images/Bg-Up45.webp";
 
 // Skema validasi menggunakan Yup
 const validationSchema = Yup.object({
@@ -46,8 +47,12 @@ const LoginFormMol = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 ">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg shadow-primary-dark md:w-3/4 lg:w-1/2 xl:w-1/3">
+    <div
+      className="relative flex items-center justify-center min-h-screen px-4 bg-cover"
+      style={{ backgroundImage: `url(${Bg})` }}
+    >
+      <div className="absolute inset-0 bg-black opacity-60"></div>
+      <div className="relative w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg text-neutral shadow-primary-dark md:w-3/4 lg:w-1/2 xl:w-1/3">
         <h2 className="text-2xl font-semibold text-center">Masuk</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
@@ -61,6 +66,7 @@ const LoginFormMol = () => {
                   {({ field }) => (
                     <FormInput
                       label="Email"
+                      className="bg-neutral-light text-neutral border-stone-300"
                       type="email"
                       placeholder="Masukkan email Anda"
                       {...field}
@@ -78,6 +84,7 @@ const LoginFormMol = () => {
                   {({ field }) => (
                     <FormInput
                       label="Kata Sandi"
+                      className="border bg-neutral-light text-neutral border-stone-300"
                       type="password"
                       placeholder="Masukkan kata sandi Anda"
                       {...field}
@@ -94,7 +101,7 @@ const LoginFormMol = () => {
                 type="submit"
                 name="Masuk"
                 size="md"
-                className="w-full font-semibold bg-primary-dark text-neutral-light hover:bg-primary-light"
+                className="w-full font-semibold bg-primary-dark text-neutral-light hover:bg-primary-light hover:text-neutral"
                 disabled={isSubmitting && isValid && dirty}
               />
             </Form>
@@ -103,13 +110,13 @@ const LoginFormMol = () => {
         <Button
           name="Login dengan Google"
           size="md"
-          className="w-full mt-4 font-semibold transition-transform duration-500 border border-white shadow-md bg-neutral-100 hover:bg-neutral-200 hover:scale-105 shadow-neutral-400 text-neutral-800"
+          className="w-full mt-4 font-semibold transition-transform duration-500 border border-white shadow-md hover:border-slate-300 bg-neutral-100 hover:bg-neutral-200 hover:scale-105 shadow-neutral-400 text-neutral-800"
           onClick={handleGoogleLogin}
           icon={<img src={Google} alt="Google" className="w-8 h-8" />}
         />
         <Paragraph>
           Belum punya akun?
-          <Link to="#" className="ml-2 text-secondary-dark">
+          <Link to="#" className="ml-2 text-info">
             Daftar
           </Link>
         </Paragraph>

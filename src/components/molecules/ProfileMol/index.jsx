@@ -43,7 +43,7 @@ const ProfileMol = () => {
             <img
               src={profileImage}
               alt="Profile"
-              className="object-cover w-full h-full "
+              className="object-cover w-full h-full"
             />
           </div>
           <label
@@ -173,7 +173,7 @@ const ProfileMol = () => {
                     name="address"
                     value={formData.address}
                     onChange={() => {}}
-                    className="w-full textarea textarea-bordered"
+                    className="w-full textarea text-neutral-light textarea-bordered"
                     disabled
                   />
                 </div>
@@ -234,114 +234,20 @@ const ProfileMol = () => {
               </form>
             </div>
 
-            <div className="p-6 shadow-lg card bg-primary">
-              <h2 className="text-2xl font-bold text-secondary">Skills</h2>
-              <ul className="mt-2 ml-5 list-disc">
-                <li>Languages: Python, JavaScript, Java, C++</li>
-                <li>
-                  Frameworks/Libraries: ReactJS, Node.js, Flask, TensorFlow,
-                  Bootstrap
-                </li>
-                <li>Tools: Git, VS Code, Jupyter Notebook, Docker</li>
-              </ul>
+            <div className=" flex flex-col space-y-6 h-[180px] md:space-y-0 md:flex-row md:space-x-6">
+              <div className="w-full p-6 transition-transform duration-500 border-2 shadow-lg hover:scale-105 border-primary-light bg-base-100 card">
+                <h2 className="text-2xl font-bold text-secondary">
+                  Status Mahasiswa
+                </h2>
+                <p className="mt-2">Aktif, Semester 4</p>
+                <p className="mt-2">Wali Dosen: Dr. John Doe</p>
+              </div>
+
+              <div className="w-full p-6 transition-transform duration-500 border shadow-lg card bg-primary hover:scale-105 border-neutral">
+                <img src="" alt="KTM" />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="mt-10 space-y-6">
-        <div className="p-6 shadow-lg card bg-primary">
-          <h2 className="text-2xl font-bold text-secondary">GitHub Stats</h2>
-          <div className="mt-2">
-            <p>Total Stars Earned: 4</p>
-            <p>Total Commits (2024): 47</p>
-            <p>Total PRs: 5</p>
-            <p>Total Issues: 14</p>
-            <p>Contributed to (last year): 1</p>
-          </div>
-        </div>
-
-        <div className="p-6 shadow-lg card bg-base-100">
-          <h2 className="text-2xl font-bold text-primary">
-            Recent Contributions
-          </h2>
-          <div className="mt-2">
-            <img
-              src="/path_to_your_contributions_image"
-              alt="Contributions"
-              className="w-full"
-            />{" "}
-            {/* Update with the correct path */}
-          </div>
-        </div>
-
-        <div className="p-6 shadow-lg card bg-base-100">
-          <h2 className="text-2xl font-bold text-primary">
-            Popular Repositories
-          </h2>
-          <ul className="mt-2 ml-5 list-disc">
-            <li>
-              <a
-                href="https://github.com/farhank15/Profil-me-farhank"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent"
-              >
-                Profil-me-farhank
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://github.com/farhank15/Health-Directions-App"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent"
-              >
-                Health-Directions-App
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://github.com/farhank15/Stuntguard-App"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent"
-              >
-                Stuntguard-App
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://github.com/farhank15/building-material-app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent"
-              >
-                building-material-app
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div className="p-6 shadow-lg card bg-base-100">
-          <h2 className="text-2xl font-bold text-primary">Let's Connect</h2>
-          <ul className="mt-2 ml-5 list-disc">
-            <li>
-              <a href="mailto:farhank22@gmail.com" className="text-accent">
-                Email: farhank22@gmail.com
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.linkedin.com/in/farhank15"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent"
-              >
-                LinkedIn
-              </a>
-            </li>
-          </ul>
         </div>
       </div>
     </div>

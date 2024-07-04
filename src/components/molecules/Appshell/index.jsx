@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "../NavbarMol";
-import Avatar from "../AvatarMol";
+import AvatarMol from "@components/atoms/Avatar";
 
 const Appshell = ({ children }) => {
   const disableShortcuts = (event) => {
@@ -82,7 +82,7 @@ const Appshell = ({ children }) => {
 
   return (
     <Router>
-      <Avatar />
+      <AvatarMol />
       <div className="m-auto font-poppins max-w-7xl">
         <HelmetProvider>{children}</HelmetProvider>
       </div>

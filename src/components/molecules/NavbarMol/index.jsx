@@ -93,7 +93,7 @@ const NavbarMol = () => {
           isOpen
             ? isExpanded
               ? "h-48 bg-white overflow-y-auto"
-              : "h-96 md:h-36 bg-white border-neutral-50 border-2 md:pt-0 overflow-y-auto"
+              : "h-96 md:h-40 bg-white border-neutral-50 border-2 md:pt-0 overflow-y-auto"
             : "h-4 bg-neutral-light"
         } transition-all duration-300`}
         style={{ maxHeight: isOpen ? "75vh" : "auto" }}

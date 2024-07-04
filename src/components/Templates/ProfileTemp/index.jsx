@@ -2,7 +2,7 @@ import ProfileMol from "@components/molecules/ProfileMol";
 
 const ProfileTemp = () => {
   return (
-    <div className="mt-5">
+    <div className="my-5">
       <ProfileMol />
     </div>
   );
