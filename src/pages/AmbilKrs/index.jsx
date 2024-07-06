@@ -1,17 +1,17 @@
-import BerandaTemp from "@components/Templates/BerandaTemp";
+import AmbilKrsTemp from "@components/Templates/AmbilKrsTemp";
 import { Helmet } from "react-helmet-async";
 
-const Beranda = () => {
+const AmbilKrs = () => {
   return (
     <div>
       <Helmet>
         <title>Beranda | Sistem Akademik</title>
       </Helmet>
       <div>
-        <BerandaTemp />
+        <AmbilKrsTemp />
       </div>
     </div>
   );
 };
 
-export default Beranda;
+export default AmbilKrs;

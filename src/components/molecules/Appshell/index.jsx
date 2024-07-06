@@ -83,7 +83,7 @@ const Appshell = ({ children }) => {
   return (
     <Router>
       <AvatarMol />
-      <div className="m-auto font-poppins max-w-7xl">
+      <div className="px-4 m-auto font-poppins max-w-7xl">
         <HelmetProvider>{children}</HelmetProvider>
       </div>
       <Navbar />

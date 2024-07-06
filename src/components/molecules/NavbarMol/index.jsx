@@ -45,6 +45,11 @@ const NavbarMol = () => {
     }
   };
 
+  const handleLinkClick = () => {
+    setIsOpen(false);
+    setIsExpanded(false);
+  };
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("click", handleClickOutside);
@@ -84,8 +89,8 @@ const NavbarMol = () => {
       <div
         ref={dragHandleRef}
         className={`fixed ${
-          isOpen ? "bottom-[390px] md:bottom-[150px]" : "bottom-6"
-        } left-1/2 transform -translate-x-1/2 h-2 pb-2 rounded-full cursor-pointer w-44 opacity-80 bg-neutral transition-all duration-300`}
+          isOpen ? "bottom-[390px] md:bottom-[165px]" : "bottom-6"
+        } left-1/2 transform -translate-x-1/2 h-2 pb-2 z-40 rounded-full cursor-pointer w-44 opacity-80 bg-neutral transition-all duration-300`}
         onClick={() => setIsOpen(!isOpen)}
       ></div>
       <nav
@@ -103,14 +108,16 @@ const NavbarMol = () => {
             <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-6 lg:grid-cols-9 xl:grid-cols-12">
               <Link
                 to="/"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon icon={faHome} size="xl" className="mb-3" />
                 Beranda
               </Link>
               <Link
                 to="/presensi"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faCheckSquare}
@@ -121,7 +128,8 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/ambil-krs"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faClipboard}
@@ -132,14 +140,16 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/revisi-krs"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon icon={faFileAlt} size="xl" className="mb-3" />
                 Revisi KRS
               </Link>
               <Link
                 to="/khs"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faGraduationCap}
@@ -150,14 +160,16 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/kartu-ujian"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon icon={faFileAlt} size="xl" className="mb-3" />
                 Kartu Ujian
               </Link>
               <Link
                 to="/transkrip"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faGraduationCap}
@@ -168,7 +180,8 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/pembayaran"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faMoneyBillWave}
@@ -179,14 +192,16 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/jadwal-kuliah"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon icon={faCalendar} size="xl" className="mb-3" />
                 Jadwal Kuliah
               </Link>
               <Link
                 to="/jadwal-ujian"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faCalendarCheck}
@@ -197,7 +212,8 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/kusioner-evaluasi"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon
                   icon={faClipboardList}
@@ -208,7 +224,8 @@ const NavbarMol = () => {
               </Link>
               <Link
                 to="/bantuan"
-                className="text-primary-dark py-2  text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
               >
                 <FontAwesomeIcon icon={faLifeRing} size="xl" className="mb-3" />
                 Bantuan
