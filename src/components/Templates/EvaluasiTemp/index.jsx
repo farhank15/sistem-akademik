@@ -1,17 +1,17 @@
 import HeaderCard from "@components/atoms/HeaderCard";
-import RevisiKrs from "@components/molecules/ListRevisiKrs";
+import LembarEvaluasi from "@components/molecules/LembarEvaluasi";
 
-const RevisiKrsTemp = () => {
+const EvaluasiTemp = () => {
   return (
-    <div className="my-16">
+    <div className="py-16">
       <HeaderCard className="flex justify-center mb-2">
         <h1 className="z-20 text-3xl font-bold text-center md:text-5xl text-neutral-light">
-          Revisi KRS
+          Evaluasi
         </h1>
       </HeaderCard>
-      <RevisiKrs />
+      <LembarEvaluasi />
     </div>
   );
 };
 
-export default RevisiKrsTemp;
+export default EvaluasiTemp;

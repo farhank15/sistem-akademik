@@ -3,6 +3,7 @@ import { FaQrcode, FaCheck } from "react-icons/fa";
 import Card from "@components/atoms/Card";
 import Webcam from "react-webcam";
 import jsQR from "jsqr";
+import Tour from "@components/atoms/Tour";
 
 const PresensiMahasiswa = () => {
   const initialClasses = [
@@ -148,14 +149,23 @@ const PresensiMahasiswa = () => {
     }
   }, [scanning]);
 
+  const steps = [
+    {
+      target: ".scan-button",
+      content: "Klik tombol ini untuk mulai memindai QR code.",
+    },
+    {
+      target: ".card",
+      content: "Ini adalah kartu kelas, Untuk Melihat Jadwal kelas",
+    },
+  ];
+
   return (
-    <div
-      className="flex flex-col items-center justify-center "
-      style={{ userSelect: "none" }}
-    >
+    <div className="container mx-auto" style={{ userSelect: "none" }}>
+      <Tour steps={steps} />
       {scanning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="relative w-3/4 md:w-1/2 lg:w-1/3">
+          <div className="relative w-3/4 md:w-1/2 lg:w-1/3 ">
             <Webcam
               audio={false}
               ref={webcamRef}
@@ -180,7 +190,9 @@ const PresensiMahasiswa = () => {
           {classes.map((item, index) => (
             <Card
               key={index}
-              className={`p-4 ${item.studentPresent ? "bg-green-100" : ""}`}
+              className={`p-4 ${
+                item.studentPresent ? "bg-green-100" : ""
+              } card`}
             >
               <div className="flex justify-between">
                 <div>
@@ -192,7 +204,7 @@ const PresensiMahasiswa = () => {
                 ) : (
                   <button
                     onClick={() => startScan(index)}
-                    className="text-blue-500"
+                    className="text-blue-500 scan-button"
                   >
                     <FaQrcode />
                   </button>

@@ -5,7 +5,7 @@ import EventList from "@components/molecules/EventList";
 
 const BerandaTemp = () => {
   return (
-    <div className="py-10 ">
+    <div className="py-16">
       <div className="w-full py-2">
         <CardName />
       </div>

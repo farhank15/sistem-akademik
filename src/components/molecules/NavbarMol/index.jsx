@@ -85,7 +85,7 @@ const NavbarMol = () => {
   }, []);
 
   return (
-    <div ref={navbarRef} className="relative">
+    <div ref={navbarRef} className="relative z-50">
       <div
         ref={dragHandleRef}
         className={`fixed ${
@@ -103,9 +103,9 @@ const NavbarMol = () => {
         } transition-all duration-300`}
         style={{ maxHeight: isOpen ? "75vh" : "auto" }}
       >
-        <div className="container flex items-center justify-between h-full mx-auto">
+        <div className="container flex items-center justify-center h-full mx-auto">
           {isOpen && (
-            <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-6 lg:grid-cols-9 xl:grid-cols-12">
+            <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-6 lg:grid-cols-9 xl:grid-cols-11">
               <Link
                 to="/"
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
@@ -189,14 +189,6 @@ const NavbarMol = () => {
                   className="mb-3"
                 />
                 Pembayaran
-              </Link>
-              <Link
-                to="/jadwal-kuliah"
-                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
-                onClick={handleLinkClick}
-              >
-                <FontAwesomeIcon icon={faCalendar} size="xl" className="mb-3" />
-                Jadwal Kuliah
               </Link>
               <Link
                 to="/jadwal-ujian"

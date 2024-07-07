@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import Table from "@components/atoms/Table";
+import Tour from "@components/atoms/Tour";
 
 const ListKhsMahasiswa = () => {
   const khsData = [
@@ -63,22 +64,44 @@ const ListKhsMahasiswa = () => {
     documentTitle: "Kartu Hasil Studi (KHS)",
   });
 
+  const steps = [
+    {
+      target: ".table-container", // Anda perlu menambahkan className ke elemen tabel
+      content: "Daftar nilai mata kuliah yang sudah diambil.",
+    },
+    {
+      target: ".total-sks",
+      content: "Total SKS yang diambil selama semester ini.",
+    },
+    {
+      target: ".semester-gpa",
+      content: "Indeks Prestasi Semester (IP) yang didapatkan.",
+    },
+    {
+      target: ".print-button",
+      content: "Klik tombol ini untuk mencetak KHS ke dalam PDF.",
+    },
+  ];
+
   return (
     <div className="container mx-auto">
+      <Tour steps={steps} />
       <div ref={componentRef} className="print-black-and-white print-a3">
         <h1 className="mb-4 text-3xl font-bold text-center hidden-for-print text-neutral-dark">
           Kartu Hasil Studi
         </h1>
-        <Table columns={columns} data={khsData} />
+        <div className="table-container">
+          <Table columns={columns} data={khsData} />
+        </div>
         <div className="flex justify-between mt-4 text-neutral-light">
-          <h3>Total SKS: {totalSKS}</h3>
-          <h3>IP Semester: {semesterGPA}</h3>
+          <h3 className="total-sks">Total SKS: {totalSKS}</h3>
+          <h3 className="semester-gpa">IP Semester: {semesterGPA}</h3>
         </div>
       </div>
       <div className="flex justify-end mt-4">
         <button
           onClick={handlePrint}
-          className="px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-700"
+          className="px-4 py-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-700 print-button"
         >
           Print to PDF
         </button>

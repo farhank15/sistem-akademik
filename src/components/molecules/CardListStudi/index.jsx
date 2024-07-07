@@ -1,10 +1,10 @@
 import Card from "@components/atoms/Card";
 import { FaCheck } from "react-icons/fa"; // Import icon dari React Icons
 
-const CardListStudi = ({ course, isSelected, onClick }) => {
+const CardListStudi = ({ course, isSelected, onClick, className }) => {
   return (
     <Card
-      className={`p-2 pt-4 cursor-pointer relative ${
+      className={`p-2 pt-4 cursor-pointer relative ${className} ${
         isSelected ? "border border-green-500" : "border border-primary"
       }`}
       onClick={onClick}

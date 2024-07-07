@@ -1,17 +1,17 @@
 import HeaderCard from "@components/atoms/HeaderCard";
-import RevisiKrs from "@components/molecules/ListRevisiKrs";
+import DaftarJadwalUjian from "@components/molecules/Daftar-Jadwal-Ujian";
 
-const RevisiKrsTemp = () => {
+const JadwalUjianTemp = () => {
   return (
-    <div className="my-16">
+    <div className="py-16">
       <HeaderCard className="flex justify-center mb-2">
         <h1 className="z-20 text-3xl font-bold text-center md:text-5xl text-neutral-light">
-          Revisi KRS
+          Jadwal Ujian
         </h1>
       </HeaderCard>
-      <RevisiKrs />
+      <DaftarJadwalUjian />
     </div>
   );
 };
 
-export default RevisiKrsTemp;
+export default JadwalUjianTemp;

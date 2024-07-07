@@ -5,7 +5,7 @@ const AmbilKrs = () => {
   return (
     <div>
       <Helmet>
-        <title>Beranda | Sistem Akademik</title>
+        <title>Ambil-KRS | Sistem Akademik</title>
       </Helmet>
       <div>
         <AmbilKrsTemp />

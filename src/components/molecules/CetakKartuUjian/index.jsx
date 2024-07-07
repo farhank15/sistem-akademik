@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { FaPrint } from "react-icons/fa";
 import Stemp from "@assets/logos/logo-verivikasi-stemp.png";
+import Card from "@components/atoms/Card";
 
 const CardKartu = ({ student }) => {
   const componentRef = useRef();
@@ -13,111 +14,128 @@ const CardKartu = ({ student }) => {
 
   return (
     <div className="container mx-auto">
-      <div
-        ref={componentRef}
-        className="p-6 mx-auto border border-gray-300 rounded-lg shadow-lg print-a3"
-      >
-        <div className="mb-4 text-center">
-          <h1 className="text-2xl font-bold text-neutral-light">
-            UNIVERSITAS BALIKPAPAN
-          </h1>
-          <h2 className="text-xl font-semibold text-neutral-light">
-            FAKULTAS TEKNIK
-          </h2>
-          <h3 className="text-lg font-medium text-neutral-light">
-            KARTU UJIAN AKHIR SEMESTER
-          </h3>
-          <p className="text-neutral-light">Semester Genap 2023/2024</p>
-        </div>
-        <div className="mb-4">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-neutral-light">Nama: {student.name}</p>
-              <p className="text-neutral-light">NIM: {student.nim}</p>
-              <p className="text-neutral-light">
-                Jurusan/Prodi: {student.program}
-              </p>
-            </div>
-            <div>
-              <p className="text-neutral-light">
-                Status Jurusan: Terakreditasi
-              </p>
-              <p className="text-neutral-light">Jenjang Studi: Strata 1 (S1)</p>
+      <div className="hidden md:block">
+        <div
+          ref={componentRef}
+          className="p-6 mx-auto border border-gray-300 rounded-lg shadow-lg print-a3"
+        >
+          <div className="mb-4 text-center">
+            <h1 className="text-2xl font-bold text-neutral-light">
+              UNIVERSITAS BALIKPAPAN
+            </h1>
+            <h2 className="text-xl font-semibold text-neutral-light">
+              FAKULTAS TEKNIK
+            </h2>
+            <h3 className="text-lg font-medium text-neutral-light">
+              KARTU UJIAN AKHIR SEMESTER
+            </h3>
+            <p className="text-neutral-light">Semester Genap 2023/2024</p>
+          </div>
+          <div className="mb-4">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-neutral-light">Nama: {student.name}</p>
+                <p className="text-neutral-light">NIM: {student.nim}</p>
+                <p className="text-neutral-light">
+                  Jurusan/Prodi: {student.program}
+                </p>
+              </div>
+              <div>
+                <p className="text-neutral-light">
+                  Status Jurusan: Terakreditasi
+                </p>
+                <p className="text-neutral-light">
+                  Jenjang Studi: Strata 1 (S1)
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="mb-4">
-          <table className="min-w-full border border-collapse border-gray-700">
-            <thead>
-              <tr>
-                <th className="px-2 py-1 border border-gray-700">No</th>
-                <th className="px-2 py-1 border border-gray-700">KodeMK</th>
-                <th className="px-2 py-1 border border-gray-700">Matakuliah</th>
-                <th className="px-2 py-1 border border-gray-700">SKS</th>
-                <th className="px-2 py-1 border border-gray-700">Kls</th>
-                <th className="px-2 py-1 border border-gray-700">Dosen</th>
-                <th className="px-2 py-1 border border-gray-700">Prf UTS</th>
-                <th className="px-2 py-1 border border-gray-700">Prf UAS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {student.exams.map((exam, index) => (
-                <tr key={index}>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {index + 1}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.code}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.course}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.sks}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.class}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.lecturer}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.uts}
-                  </td>
-                  <td className="px-2 py-1 border border-gray-700">
-                    {exam.uas}
-                  </td>
+          <div className="mb-4">
+            <table className="min-w-full border border-collapse border-gray-700">
+              <thead>
+                <tr>
+                  <th className="px-2 py-1 border border-gray-700">No</th>
+                  <th className="px-2 py-1 border border-gray-700">KodeMK</th>
+                  <th className="px-2 py-1 border border-gray-700">
+                    Matakuliah
+                  </th>
+                  <th className="px-2 py-1 border border-gray-700">SKS</th>
+                  <th className="px-2 py-1 border border-gray-700">Kls</th>
+                  <th className="px-2 py-1 border border-gray-700">Dosen</th>
+                  <th className="px-2 py-1 border border-gray-700">Prf UTS</th>
+                  <th className="px-2 py-1 border border-gray-700">Prf UAS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="flex justify-between mt-4">
-          <p className="text-neutral-light">Jumlah SKS: {student.totalSKS}</p>
-          <p className="text-neutral-light">Yogyakarta, 6 Juli 2024</p>
-        </div>
-        <div className="flex justify-between mt-4">
-          <div>
-            <div className="w-32 h-40 mb-2 border border-gray-700">
-              <p className="flex justify-center">2 x 3</p>
-            </div>
+              </thead>
+              <tbody>
+                {student.exams.map((exam, index) => (
+                  <tr key={index}>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {index + 1}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.code}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.course}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.sks}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.class}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.lecturer}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.uts}
+                    </td>
+                    <td className="px-2 py-1 border border-gray-700">
+                      {exam.uas}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div className="text-center">
-            <p className="text-neutral-light">Bagian Keuangan</p>
+          <div className="flex justify-between mt-4">
+            <p className="text-neutral-light">Jumlah SKS: {student.totalSKS}</p>
+            <p className="text-neutral-light">Yogyakarta, 6 Juli 2024</p>
+          </div>
+          <div className="flex justify-between mt-4">
             <div>
-              <img
-                src={Stemp}
-                alt="Verified Stamp"
-                className="mx-auto w-72 -rotate-3"
-              />
+              <div className="w-32 h-40 mb-2 border border-gray-700">
+                <p className="flex justify-center">2 x 3</p>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-neutral-light">Bagian Keuangan</p>
+              <div>
+                <img
+                  src={Stemp}
+                  alt="Verified Stamp"
+                  className="mx-auto w-72 -rotate-3"
+                />
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-neutral-light">Mahasiswa</p>
+              <div className="mt-4 mb-20"></div>
+              <p className="text-neutral-light">{student.name}</p>
             </div>
           </div>
-          <div className="text-center">
-            <p className="text-neutral-light">Mahasiswa</p>
-            <div className="mt-4 mb-20"></div>
-            <p className="text-neutral-light">{student.name}</p>
-          </div>
         </div>
+      </div>
+      <div className="block md:hidden">
+        <Card className="p-4 text-center">
+          <h2 className="text-xl font-bold text-red-500">
+            Tampilan tidak suport di smartphone
+          </h2>
+          <p className="text-sm text-gray-500">
+            Silakan gunakan perangkat dengan layar yang lebih besar untuk
+            melihat dan mencetak kartu ujian.
+          </p>
+        </Card>
       </div>
       <div className="flex justify-end mt-4">
         <button
@@ -223,7 +241,7 @@ const CetakKartuUjian = () => {
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <CardKartu student={studentData} />
     </div>
   );

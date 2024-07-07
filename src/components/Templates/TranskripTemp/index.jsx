@@ -1,17 +1,17 @@
 import HeaderCard from "@components/atoms/HeaderCard";
-import RevisiKrs from "@components/molecules/ListRevisiKrs";
+import ListTranskripNilai from "@components/molecules/ListTranskripNilai";
 
-const RevisiKrsTemp = () => {
+const TranskripTemp = () => {
   return (
     <div className="my-16">
       <HeaderCard className="flex justify-center mb-2">
         <h1 className="z-20 text-3xl font-bold text-center md:text-5xl text-neutral-light">
-          Revisi KRS
+          Transkrip
         </h1>
       </HeaderCard>
-      <RevisiKrs />
+      <ListTranskripNilai />
     </div>
   );
 };
 
-export default RevisiKrsTemp;
+export default TranskripTemp;
