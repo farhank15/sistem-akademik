@@ -19,7 +19,14 @@ function App() {
   return (
     <Appshell>
       <Routes>
-        <Route path="/" element={<Beranda />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Beranda />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<LoginForm />} />
         <Route
           path="/profile-setting"

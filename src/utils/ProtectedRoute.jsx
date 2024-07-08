@@ -34,7 +34,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen text-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
