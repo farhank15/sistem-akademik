@@ -40,6 +40,11 @@ const LoginFormMol = () => {
         console.error("Login dengan Google gagal", error);
       } else {
         console.log("Login dengan Google berhasil", { user, session });
+
+        // Simpan data pengguna ke database
+        if (user && session) {
+          await saveUserToDatabase(user, session.access_token);
+        }
       }
     } catch (error) {
       console.error("Error saat login dengan Google", error);
