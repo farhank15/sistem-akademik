@@ -14,6 +14,7 @@ import Profile from "@pages/Profile";
 import RevisiKrs from "@pages/RevisiKrs";
 import Transkrip from "@pages/Transkrip";
 import ProtectedRoute from "./utils/ProtectedRoute";
+import JadwalKelas from "@pages/JadwalKelas";
 
 function App() {
   return (
@@ -105,6 +106,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["mahasiswa"]}>
               <Evaluasi />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jadwal-kelas"
+          element={
+            <ProtectedRoute allowedRoles={["dosen"]}>
+              <JadwalKelas />
             </ProtectedRoute>
           }
         />

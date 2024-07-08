@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
-import Navbar from "../NavbarMol";
 import AvatarMol from "@components/atoms/Avatar";
 import Cookies from "js-cookie"; // Import js-cookie
+import NavbarMahasiswa from "../NavbarMahasiswa";
+import NavbarDosen from "../NavbarDosen"; // Import NavbarDosen
 
 const Appshell = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null); // State untuk menyimpan peran pengguna
 
   useEffect(() => {
     const token = Cookies.get("user_session");
-    setIsLoggedIn(!!token); // Set isLoggedIn to true if token exists
+    if (token) {
+      setIsLoggedIn(true);
+      // Asumsi: token menyimpan informasi peran pengguna di payload JWT
+      const payload = JSON.parse(atob(token.split(".")[1])); // Decode payload token
+      setUserRole(payload.role); // Ambil peran pengguna dari payload
+    }
   }, []);
 
   const disableShortcuts = (event) => {
@@ -93,7 +100,8 @@ const Appshell = ({ children }) => {
       <div className="px-4 m-auto font-poppins max-w-7xl">
         <HelmetProvider>{children}</HelmetProvider>
       </div>
-      {isLoggedIn && <Navbar />}
+      {isLoggedIn && userRole === "mahasiswa" && <NavbarMahasiswa />}
+      {isLoggedIn && userRole === "dosen" && <NavbarDosen />}
     </Router>
   );
 };
