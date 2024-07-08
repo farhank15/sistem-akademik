@@ -1,3 +1,5 @@
+import React from "react";
+import { Route, Routes } from "react-router-dom";
 import Appshell from "@components/molecules/Appshell";
 import AmbilKrs from "@pages/AmbilKrs";
 import Beranda from "@pages/Beranda";
@@ -11,7 +13,7 @@ import Presensi from "@pages/Presensi";
 import Profile from "@pages/Profile";
 import RevisiKrs from "@pages/RevisiKrs";
 import Transkrip from "@pages/Transkrip";
-import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./utils/ProtectedRoute";
 
 function App() {
   return (
@@ -19,16 +21,86 @@ function App() {
       <Routes>
         <Route path="/" element={<Beranda />} />
         <Route path="/login" element={<LoginForm />} />
-        <Route path="/profile-setting" element={<Profile />} />
-        <Route path="/presensi" element={<Presensi />} />
-        <Route path="/ambil-krs" element={<AmbilKrs />} />
-        <Route path="/revisi-krs" element={<RevisiKrs />} />
-        <Route path="/khs" element={<KhsMahasiswa />} />
-        <Route path="/kartu-ujian" element={<KartuUjian />} />
-        <Route path="/transkrip" element={<Transkrip />} />
-        <Route path="/pembayaran" element={<Pembayaran />} />
-        <Route path="/jadwal-ujian" element={<JadwalUjian />} />
-        <Route path="/kusioner-evaluasi" element={<Evaluasi />} />
+        <Route
+          path="/profile-setting"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/presensi"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Presensi />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ambil-krs"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <AmbilKrs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/revisi-krs"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <RevisiKrs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/khs"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <KhsMahasiswa />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kartu-ujian"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <KartuUjian />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transkrip"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Transkrip />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pembayaran"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Pembayaran />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jadwal-ujian"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <JadwalUjian />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kusioner-evaluasi"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Evaluasi />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Appshell>
   );
