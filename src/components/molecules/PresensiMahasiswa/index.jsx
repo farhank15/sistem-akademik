@@ -107,10 +107,15 @@ const PresensiMahasiswa = () => {
   const startScan = async (index) => {
     try {
       console.log("Requesting camera permission...");
-      await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
       console.log("Camera permission granted");
       setScanIndex(index);
       setScanning(true);
+      if (webcamRef.current) {
+        webcamRef.current.srcObject = stream;
+      }
     } catch (err) {
       console.error("Camera permission denied:", err);
       alert("Akses kamera diperlukan untuk memindai QR code.");
@@ -127,23 +132,29 @@ const PresensiMahasiswa = () => {
     if (scanning) {
       const interval = setInterval(() => {
         const imageSrc = webcamRef.current.getScreenshot();
-        const image = new Image();
-        image.src = imageSrc;
-        image.onload = () => {
-          const canvas = canvasRef.current;
-          const context = canvas.getContext("2d");
-          context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          const imageData = context.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
-          if (code) {
-            handleScan(code.data);
-          }
-        };
+        if (imageSrc) {
+          const image = new Image();
+          image.src = imageSrc;
+          image.onload = () => {
+            const canvas = canvasRef.current;
+            const context = canvas.getContext("2d");
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            const imageData = context.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const code = jsQR(
+              imageData.data,
+              imageData.width,
+              imageData.height
+            );
+            if (code) {
+              handleScan(code.data);
+            }
+          };
+        }
       }, 500);
       return () => clearInterval(interval);
     }
@@ -165,7 +176,7 @@ const PresensiMahasiswa = () => {
       <Tour steps={steps} />
       {scanning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="relative w-3/4 md:w-1/2 lg:w-1/3 ">
+          <div className="relative w-3/4 md:w-1/2 lg:w-1/3">
             <Webcam
               audio={false}
               ref={webcamRef}

@@ -3,9 +3,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import supabase from "@/client/supabase";
 import { Link } from "react-router-dom";
+import Cookies from "js-cookie";
+import {
+  RandomAvatars,
+  getRandomAvatar,
+} from "@components/atoms/RandomAvatars";
 
 const AvatarMol = ({ avatarUrl }) => {
   const [isCardOpen, setIsCardOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const cardRef = useRef(null);
   const avatarRef = useRef(null);
 
@@ -27,6 +33,17 @@ const AvatarMol = ({ avatarUrl }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const storedAvatar = localStorage.getItem("selectedAvatar");
+    if (storedAvatar) {
+      setSelectedAvatar(storedAvatar);
+    } else {
+      const newAvatar = getRandomAvatar();
+      localStorage.setItem("selectedAvatar", newAvatar);
+      setSelectedAvatar(newAvatar);
+    }
+  }, []);
+
   const handleAvatarClick = () => {
     setIsCardOpen((prev) => !prev);
   };
@@ -38,6 +55,10 @@ const AvatarMol = ({ avatarUrl }) => {
         console.error("Logout gagal", error);
       } else {
         console.log("Logout berhasil");
+        // Hapus token dari cookies
+        Cookies.remove("user_session");
+        // Hapus avatar dari local storage
+        localStorage.removeItem("selectedAvatar");
         // Redirect atau perbarui state setelah logout
         window.location.reload(); // Reload halaman untuk mereset state
       }
@@ -59,7 +80,9 @@ const AvatarMol = ({ avatarUrl }) => {
       >
         <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
           <img
-            src={avatarUrl || "https://via.placeholder.com/150"}
+            src={
+              avatarUrl || selectedAvatar || "https://via.placeholder.com/150"
+            }
             alt="Avatar"
           />
         </div>
@@ -73,7 +96,11 @@ const AvatarMol = ({ avatarUrl }) => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full">
               <img
-                src={avatarUrl || "https://via.placeholder.com/150"}
+                src={
+                  avatarUrl ||
+                  selectedAvatar ||
+                  "https://via.placeholder.com/150"
+                }
                 alt="Avatar"
                 className="rounded-full"
               />

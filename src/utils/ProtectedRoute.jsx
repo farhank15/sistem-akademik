@@ -1,6 +1,8 @@
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import supabase from "@/client/supabase"; // import your supabase instance
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const [loading, setLoading] = useState(true);
@@ -8,24 +10,31 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+      const token = Cookies.get("user_session");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-      if (session) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const { id } = decodedToken;
+
         const { data, error } = await supabase
           .from("users")
           .select("*")
-          .eq("user_id", session.user.id)
+          .eq("id", id)
           .single();
 
-        if (data) {
-          setUser(data);
+        if (error) {
+          setLoading(false);
+          return;
         }
 
-        setLoading(false);
-      } else {
+        setUser(data);
+      } catch (error) {
+        console.error("Error decoding token or fetching user:", error);
+      } finally {
         setLoading(false);
       }
     };

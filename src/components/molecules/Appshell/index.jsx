@@ -1,10 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "../NavbarMol";
 import AvatarMol from "@components/atoms/Avatar";
+import Cookies from "js-cookie"; // Import js-cookie
 
 const Appshell = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    setIsLoggedIn(!!token); // Set isLoggedIn to true if token exists
+  }, []);
+
   const disableShortcuts = (event) => {
     // List of key combinations that should be disabled
     const disabledKeys = [
@@ -49,7 +57,6 @@ const Appshell = ({ children }) => {
       "Control+Shift+B",
       "Control+D",
       "Control+Shift+D",
-
       "Control+Shift+C",
       "Control+Shift+J",
     ];
@@ -82,11 +89,11 @@ const Appshell = ({ children }) => {
 
   return (
     <Router>
-      <AvatarMol />
+      {isLoggedIn && <AvatarMol />}
       <div className="px-4 m-auto font-poppins max-w-7xl">
         <HelmetProvider>{children}</HelmetProvider>
       </div>
-      <Navbar />
+      {isLoggedIn && <Navbar />}
     </Router>
   );
 };
