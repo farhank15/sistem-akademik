@@ -261,7 +261,7 @@ const ListJadwalKelas = () => {
             className="w-full px-4 py-2 border rounded-md text-primary bg-neutral-light"
           />
         </div>
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {filteredClasses.map((item, index) => (
             <Card
               key={index}

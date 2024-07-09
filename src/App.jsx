@@ -15,6 +15,7 @@ import RevisiKrs from "@pages/RevisiKrs";
 import Transkrip from "@pages/Transkrip";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import JadwalKelas from "@pages/JadwalKelas";
+import RekapPresensi from "@pages/RekapPresensi";
 
 function App() {
   return (
@@ -114,6 +115,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["dosen"]}>
               <JadwalKelas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rekap-presensi/:id"
+          element={
+            <ProtectedRoute allowedRoles={["dosen"]}>
+              <RekapPresensi />
             </ProtectedRoute>
           }
         />

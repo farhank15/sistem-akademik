@@ -156,7 +156,7 @@ const NavbarDosen = () => {
                 Riwayat Kelas
               </Link>
               <Link
-                to="/presensi-mahasiswa"
+                to={`/rekap-presensi/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >
