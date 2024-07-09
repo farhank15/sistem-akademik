@@ -15,13 +15,14 @@ const ListJadwalKelas = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
+  const [rooms, setRooms] = useState([]); // State untuk menyimpan daftar ruangan
 
   useEffect(() => {
     const token = Cookies.get("user_session");
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        setUserId(decodedToken.id); // Set user ID from token
+        setUserId(decodedToken.id); // Set user ID dari token
       } catch (error) {
         console.error("Token tidak valid:", error);
       }
@@ -31,6 +32,7 @@ const ListJadwalKelas = () => {
   useEffect(() => {
     if (userId) {
       fetchClasses(userId);
+      fetchRooms();
     }
   }, [userId]);
 
@@ -46,11 +48,15 @@ const ListJadwalKelas = () => {
           hari,
           waktu_mulai,
           waktu_selesai,
+          ruang_id,
           matakuliah (
             kode,
             nama,
             semester,
             sks
+          ),
+          ruangkelas:ruang_id (
+            nama
           )
         `
         )
@@ -70,19 +76,32 @@ const ListJadwalKelas = () => {
     }
   };
 
+  const fetchRooms = async () => {
+    try {
+      const { data, error } = await supabase.from("ruangkelas").select("*");
+      if (error) {
+        console.error("Gagal mengambil data ruangan:", error.message);
+        return;
+      }
+      setRooms(data);
+    } catch (error) {
+      console.error("Gagal mengambil data ruangan:", error.message);
+    }
+  };
+
   const handleEdit = (index) => {
     setEditingClass({ ...filteredClasses[index], index });
   };
 
   const handleSave = async () => {
     if (editingClass !== null) {
-      const { jadwal_kelas_id, hari, waktu_mulai, waktu_selesai } =
+      const { jadwal_kelas_id, hari, waktu_mulai, waktu_selesai, ruang_id } =
         editingClass;
 
       try {
         const { data, error } = await supabase
           .from("jadwalkelas")
-          .update({ hari, waktu_mulai, waktu_selesai })
+          .update({ hari, waktu_mulai, waktu_selesai, ruang_id })
           .eq("jadwal_kelas_id", jadwal_kelas_id);
 
         if (error) {
@@ -97,10 +116,12 @@ const ListJadwalKelas = () => {
           return;
         }
 
-        const newClasses = [...classes];
-        newClasses[editingClass.index] = editingClass;
-        setClasses(newClasses);
-        setFilteredClasses(newClasses);
+        // Update state classes dan filteredClasses
+        const updatedClasses = classes.map((cls, idx) =>
+          idx === editingClass.index ? editingClass : cls
+        );
+        setClasses(updatedClasses);
+        setFilteredClasses(updatedClasses);
         setEditingClass(null);
 
         Swal.fire({
@@ -109,6 +130,8 @@ const ListJadwalKelas = () => {
           text: "Berhasil memperbarui jadwal kelas.",
           showConfirmButton: false,
           timer: 1200,
+        }).then(() => {
+          window.location.reload();
         });
       } catch (error) {
         console.error("Gagal memperbarui data:", error.message);
@@ -199,6 +222,23 @@ const ListJadwalKelas = () => {
                 className="w-full px-3 py-2 mt-1 border rounded-md text-primary-dark bg-neutral-light"
               />
             </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Ruangan
+              </label>
+              <select
+                name="ruang_id"
+                value={editingClass.ruang_id}
+                onChange={handleChange}
+                className="w-full px-3 py-2 mt-1 border rounded-md text-primary-dark bg-neutral-light"
+              >
+                {rooms.map((room) => (
+                  <option key={room.ruang_id} value={room.ruang_id}>
+                    {room.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex justify-end">
               <button
                 type="button"
@@ -248,11 +288,14 @@ const ListJadwalKelas = () => {
                 )}
               </div>
               <div className="flex justify-between mt-4 text-sm text-gray-400">
-                <p>{item.hari}</p>
-                <div className="flex text-right">
-                  <p className="text-[12px]">
-                    {item.waktu_mulai} s/d {item.waktu_selesai}
-                  </p>
+                <p className="flex items-end">{item.ruangkelas.nama}</p>
+                <div>
+                  <div className="flex flex-col text-right">
+                    <p>{item.hari}</p>
+                    <p className="text-[12px]">
+                      {item.waktu_mulai} s/d {item.waktu_selesai}
+                    </p>
+                  </div>
                 </div>
               </div>
             </Card>

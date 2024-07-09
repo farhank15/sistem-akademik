@@ -106,7 +106,7 @@ const NavbarDosen = () => {
       <div
         ref={dragHandleRef}
         className={`fixed ${
-          isOpen ? "bottom-[390px] md:bottom-[165px]" : "bottom-6"
+          isOpen ? "bottom-[215px] md:bottom-[165px]" : "bottom-6"
         } left-1/2 transform -translate-x-1/2 h-2 pb-2 z-40 rounded-full cursor-pointer w-44 opacity-80 bg-neutral transition-all duration-300`}
         onClick={() => setIsOpen(!isOpen)}
       ></div>
@@ -115,7 +115,7 @@ const NavbarDosen = () => {
           isOpen
             ? isExpanded
               ? "h-48 bg-white overflow-y-auto"
-              : "h-96 md:h-40 bg-white border-neutral-50 border-2 md:pt-0 overflow-y-auto"
+              : "h-52 md:h-40 bg-white border-neutral-50 border-2 md:pt-0 overflow-y-auto"
             : "h-4 bg-neutral-light"
         } transition-all duration-300`}
         style={{ maxHeight: isOpen ? "75vh" : "auto" }}
