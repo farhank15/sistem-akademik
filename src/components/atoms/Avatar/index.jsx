@@ -4,14 +4,13 @@ import { faCog, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import supabase from "@/client/supabase";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import {
-  RandomAvatars,
-  getRandomAvatar,
-} from "@components/atoms/RandomAvatars";
+import { jwtDecode } from "jwt-decode";
+import { getRandomAvatar } from "@components/atoms/RandomAvatars";
 
 const AvatarMol = ({ avatarUrl }) => {
   const [isCardOpen, setIsCardOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const [userData, setUserData] = useState(null);
   const cardRef = useRef(null);
   const avatarRef = useRef(null);
 
@@ -44,6 +43,66 @@ const AvatarMol = ({ avatarUrl }) => {
     }
   }, []);
 
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const token = Cookies.get("user_session");
+      if (!token) {
+        throw new Error("Token tidak ditemukan");
+      }
+      const decoded = jwtDecode(token);
+      const userId = decoded.sub || decoded.id;
+
+      if (!userId) {
+        throw new Error("ID pengguna tidak ditemukan dalam token");
+      }
+
+      const { data: userProfile, error: profileError } = await supabase
+        .from("users")
+        .select("id, role")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      let profileData;
+      if (userProfile.role === "mahasiswa") {
+        const { data, error } = await supabase
+          .from("profil_mahasiswa")
+          .select("nama, email")
+          .eq("user_id", userProfile.id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+        profileData = data;
+      } else if (userProfile.role === "dosen") {
+        const { data, error } = await supabase
+          .from("profil_dosen")
+          .select("nama, email")
+          .eq("user_id", userProfile.id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+        profileData = data;
+      } else {
+        throw new Error("Peran pengguna tidak dikenal");
+      }
+
+      setUserData(profileData);
+    } catch (error) {
+      console.error("Gagal mengambil data pengguna:", error.message);
+    }
+  };
+
   const handleAvatarClick = () => {
     setIsCardOpen((prev) => !prev);
   };
@@ -55,12 +114,9 @@ const AvatarMol = ({ avatarUrl }) => {
         console.error("Logout gagal", error);
       } else {
         console.log("Logout berhasil");
-        // Hapus token dari cookies
         Cookies.remove("user_session");
-        // Hapus avatar dari local storage
         localStorage.removeItem("selectedAvatar");
-        // Redirect atau perbarui state setelah logout
-        window.location.reload(); // Reload halaman untuk mereset state
+        window.location.reload();
       }
     } catch (error) {
       console.error("Error saat logout", error);
@@ -68,7 +124,7 @@ const AvatarMol = ({ avatarUrl }) => {
   };
 
   const handleSettingsClick = () => {
-    setIsCardOpen(false); // Menutup menu ketika pengguna mengklik pengaturan profil
+    setIsCardOpen(false);
   };
 
   return (
@@ -88,7 +144,7 @@ const AvatarMol = ({ avatarUrl }) => {
         </div>
       </div>
 
-      {isCardOpen && (
+      {isCardOpen && userData && (
         <div
           ref={cardRef}
           className="absolute right-0 z-50 p-4 mt-2 bg-white rounded-lg shadow-lg w-72"
@@ -107,12 +163,9 @@ const AvatarMol = ({ avatarUrl }) => {
             </div>
             <div>
               <h2 className="text-[16px] text-neutral-dark font-semibold">
-                Ahmad Farhan Kholik
+                {userData.nama}
               </h2>
-              <p className="text-[12px] text-neutral">21450410030</p>
-              <p className="font-sans text-[12px] text-gray-600">
-                Dr. John Doe
-              </p>
+              <p className="text-[12px] text-neutral">{userData.email}</p>
             </div>
           </div>
           <div className="mt-4">

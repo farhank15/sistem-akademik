@@ -136,7 +136,7 @@ const NavbarDosen = () => {
                 Jadwal Kelas
               </Link>
               <Link
-                to="/acc-krs"
+                to={`/acc-krs/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >
@@ -148,7 +148,7 @@ const NavbarDosen = () => {
                 ACC KRS
               </Link>
               <Link
-                to="/riwayat-kelas"
+                to={`/riwayat-kelas/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >

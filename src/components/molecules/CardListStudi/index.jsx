@@ -21,7 +21,7 @@ const CardListStudi = ({ course, isSelected, onClick, className }) => {
       <div className="mt-5">
         <h3 className="text-xl font-semibold w-80">{course.name}</h3>
         <p className="text-[12px] text-gray-300">Kode: {course.code}</p>
-        <p className="text-[12px] text-gray-300">SKS: {course.sks}</p>
+        <p className="text-[12px] mt-2 text-gray-300">SKS: {course.sks}</p>
         <p className="text-[12px] text-gray-300 absolute bottom-2 right-2">
           Semester: {course.semester}
         </p>

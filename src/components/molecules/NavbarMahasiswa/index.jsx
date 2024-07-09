@@ -12,6 +12,8 @@ import {
   faClipboardList,
   faLifeRing,
 } from "@fortawesome/free-solid-svg-icons";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 const NavbarMahasiswa = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,6 +21,21 @@ const NavbarMahasiswa = () => {
   const navbarRef = useRef(null);
   const dragHandleRef = useRef(null);
   const startY = useRef(null);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    fetchUserId();
+  }, []);
+
+  const fetchUserId = async () => {
+    try {
+      const token = Cookies.get("user_session");
+      const decoded = jwtDecode(token);
+      setUserId(decoded.id);
+    } catch (error) {
+      console.error("Gagal mendapatkan user_id:", error.message);
+    }
+  };
 
   const handleClickOutside = (event) => {
     if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -138,7 +155,7 @@ const NavbarMahasiswa = () => {
                 Ambil KRS
               </Link>
               <Link
-                to="/revisi-krs"
+                to={`/revisi-krs/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >

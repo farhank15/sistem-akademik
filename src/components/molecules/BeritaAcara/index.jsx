@@ -1,17 +1,26 @@
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import { FaCheck, FaEdit } from "react-icons/fa";
+import { FaCheck, FaEdit, FaBarcode } from "react-icons/fa";
 import Card from "@components/atoms/Card";
-import supabase from "@/client/supabase";
+import supabase from "@/client/supabase"; // Ensure this points to the correct Supabase client
 import moment from "moment-timezone";
 import "moment/locale/id"; // Import locale Indonesian
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const BeritaAcara = () => {
   const [classes, setClasses] = useState([]);
   const [filteredClasses, setFilteredClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
+  const [attendanceOpened, setAttendanceOpened] = useState(() => {
+    // Load attendanceOpened status from localStorage
+    const savedStatus = localStorage.getItem("attendanceOpened");
+    return savedStatus ? JSON.parse(savedStatus) : {};
+  });
 
   const dayMappingToEnglish = {
     Senin: "Monday",
@@ -28,7 +37,7 @@ const BeritaAcara = () => {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        setUserId(decodedToken.id); // Set user ID dari token
+        setUserId(decodedToken.id); // Set user ID from token
       } catch (error) {
         console.error("Token tidak valid:", error);
       }
@@ -48,10 +57,6 @@ const BeritaAcara = () => {
       const currentTime = moment().tz("Asia/Jakarta").format("HH:mm:ss"); // Get current time in HH:mm:ss format
       moment.locale("id"); // Set locale to Indonesian
       const currentDayInIndonesian = moment().tz("Asia/Jakarta").format("dddd");
-
-      console.log("Waktu sekarang:", currentTime);
-      console.log("User ID:", userId);
-      console.log("Hari ini dalam bahasa Indonesia:", currentDayInIndonesian);
 
       const { data, error } = await supabase
         .from("jadwalkelas")
@@ -82,8 +87,6 @@ const BeritaAcara = () => {
         return;
       }
 
-      console.log("Data dari Supabase:", data);
-
       if (data.length === 0) {
         console.warn("Tidak ada data yang sesuai dengan kriteria.");
         setClasses([]);
@@ -100,7 +103,6 @@ const BeritaAcara = () => {
       // Get current day in English
       moment.locale("en"); // Set locale to English
       const currentDayInEnglish = moment().tz("Asia/Jakarta").format("dddd");
-      console.log("Hari ini dalam bahasa Inggris:", currentDayInEnglish);
 
       // Filter data based on current day and time
       const currentTimeObject = moment.tz(
@@ -117,6 +119,7 @@ const BeritaAcara = () => {
           `1970-01-01T${item.waktu_selesai}`,
           "Asia/Jakarta"
         );
+        // Check if attendance is opened or class time is not yet over
         return currentTimeObject.isBetween(
           startTimeObject,
           endTimeObject,
@@ -125,8 +128,23 @@ const BeritaAcara = () => {
         );
       });
 
-      console.log("Data yang difilter:", filteredData);
+      // Update attendanceOpened state to reset after class time
+      const updatedAttendanceOpened = { ...attendanceOpened };
+      filteredData.forEach((item) => {
+        const endTimeObject = moment.tz(
+          `1970-01-01T${item.waktu_selesai}`,
+          "Asia/Jakarta"
+        );
+        if (currentTimeObject.isAfter(endTimeObject)) {
+          delete updatedAttendanceOpened[item.jadwal_kelas_id];
+        }
+      });
 
+      setAttendanceOpened(updatedAttendanceOpened);
+      localStorage.setItem(
+        "attendanceOpened",
+        JSON.stringify(updatedAttendanceOpened)
+      );
       setClasses(filteredData);
       setFilteredClasses(filteredData);
     } catch (error) {
@@ -136,47 +154,146 @@ const BeritaAcara = () => {
     }
   };
 
+  const handleAttendance = (
+    jadwalKelasId,
+    mataKuliahId,
+    hari,
+    waktuMulai,
+    waktuSelesai,
+    ruangId
+  ) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        MySwal.fire({
+          title: "Buka Acara",
+          text: "Apakah Anda yakin ingin membuka presensi?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Ya, buka!",
+          cancelButtonText: "Tidak, batal",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            const { error } = await supabase.from("riwayatpresensi").insert([
+              {
+                user_id: userId,
+                jadwal_kelas_id: jadwalKelasId,
+                latitude: latitude,
+                longitude: longitude,
+              },
+            ]);
+
+            if (error) {
+              Swal.fire("Gagal!", "Gagal menyimpan riwayat presensi.", "error");
+            } else {
+              const updatedAttendanceOpened = {
+                ...attendanceOpened,
+                [jadwalKelasId]: true,
+              };
+              setAttendanceOpened(updatedAttendanceOpened);
+              // Save the updated attendanceOpened state to localStorage
+              localStorage.setItem(
+                "attendanceOpened",
+                JSON.stringify(updatedAttendanceOpened)
+              );
+
+              // Show QR code or message
+              MySwal.fire({
+                title: "Barcode Presensi",
+                html: `<div style="display: flex; justify-content: center; align-items: center;">
+                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${jadwalKelasId}" alt="barcode" />
+                       </div>`,
+                confirmButtonText: "Tutup",
+              });
+            }
+          }
+        });
+      });
+    } else {
+      Swal.fire(
+        "Gagal!",
+        "Geolocation tidak didukung oleh browser Anda.",
+        "error"
+      );
+    }
+  };
+
+  const handleShowBarcode = (jadwalKelasId) => {
+    MySwal.fire({
+      title: "Barcode Presensi",
+      html: `<div style="display: flex; justify-content: center; align-items: center;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${jadwalKelasId}" alt="barcode" />
+             </div>`,
+      confirmButtonText: "Tutup",
+    });
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="container mx-auto" style={{ userSelect: "none" }}>
-      <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {filteredClasses.map((item, index) => (
-          <Card
-            key={index}
-            className={`p-4 flex justify-between ${
-              item.studentPresent ? "bg-green-100" : ""
-            } card`}
-          >
-            <div className="flex justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">
-                  {item.matakuliah.nama}
-                </h2>
-                <p className="text-[12px]">{item.matakuliah.kode}</p>
+      {filteredClasses.length === 0 ? (
+        <div className="flex items-center justify-center h-[20rem]">
+          <p>Belum ada jadwal kelas yang tersedia.</p>
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {filteredClasses.map((item, index) => (
+            <Card
+              key={index}
+              className={`p-4 flex justify-between ${
+                item.studentPresent ? "bg-green-100" : ""
+              } card`}
+            >
+              <div className="flex justify-between">
+                <div>
+                  <h2 className="text-[16px] w-[80%] font-semibold">
+                    {item.matakuliah.nama}
+                  </h2>
+                  <p className="text-[11px] mt-2">{item.matakuliah.kode}</p>
+                </div>
+                {item.studentPresent ? (
+                  <FaCheck className="text-green-500 " />
+                ) : attendanceOpened[item.jadwal_kelas_id] ? (
+                  <FaBarcode
+                    size={28}
+                    className="text-blue-500 cursor-pointer"
+                    onClick={() => handleShowBarcode(item.jadwal_kelas_id)}
+                  />
+                ) : (
+                  <FaEdit
+                    size={24}
+                    className="text-blue-500 cursor-pointer"
+                    onClick={() =>
+                      handleAttendance(
+                        item.jadwal_kelas_id,
+                        item.mata_kuliah_id,
+                        item.hari,
+                        item.waktu_mulai,
+                        item.waktu_selesai,
+                        item.ruang_id
+                      )
+                    }
+                  />
+                )}
               </div>
-              {item.studentPresent ? (
-                <FaCheck className="text-green-500" />
-              ) : (
-                <FaEdit className="text-blue-500" />
-              )}
-            </div>
-            <div className="flex justify-between mt-4 text-sm text-gray-400">
-              <p className="flex items-end">{item.ruangkelas.nama}</p>
-              <div>
-                <div className="flex flex-col text-right">
-                  <p>{item.hari}</p>
-                  <p className="text-[12px]">
-                    {item.waktu_mulai} s/d {item.waktu_selesai}
-                  </p>
+              <div className="flex justify-between mt-4 text-sm text-gray-400">
+                <p className="flex items-end">{item.ruangkelas.nama}</p>
+                <div>
+                  <div className="flex flex-col text-right">
+                    <p>{item.hari}</p>
+                    <p className="text-[12px]">
+                      {item.waktu_mulai} s/d {item.waktu_selesai}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

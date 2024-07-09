@@ -1,4 +1,3 @@
-import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Appshell from "@components/molecules/Appshell";
 import AmbilKrs from "@pages/AmbilKrs";
@@ -16,6 +15,9 @@ import Transkrip from "@pages/Transkrip";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import JadwalKelas from "@pages/JadwalKelas";
 import RekapPresensi from "@pages/RekapPresensi";
+import RiwayatKelas from "@pages/RiwayatKelas";
+import AccKrs from "@pages/AccKrs";
+import Bantuan from "@pages/Bantuan";
 
 function App() {
   return (
@@ -55,7 +57,7 @@ function App() {
           }
         />
         <Route
-          path="/revisi-krs"
+          path="/revisi-krs/:id"
           element={
             <ProtectedRoute allowedRoles={["mahasiswa"]}>
               <RevisiKrs />
@@ -111,6 +113,14 @@ function App() {
           }
         />
         <Route
+          path="/bantuan"
+          element={
+            <ProtectedRoute allowedRoles={["mahasiswa"]}>
+              <Bantuan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/jadwal-kelas/:id"
           element={
             <ProtectedRoute allowedRoles={["dosen"]}>
@@ -123,6 +133,22 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["dosen"]}>
               <RekapPresensi />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/riwayat-kelas/:id"
+          element={
+            <ProtectedRoute allowedRoles={["dosen"]}>
+              <RiwayatKelas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/acc-krs/:id"
+          element={
+            <ProtectedRoute allowedRoles={["dosen"]}>
+              <AccKrs />
             </ProtectedRoute>
           }
         />

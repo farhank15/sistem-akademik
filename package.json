@@ -37,8 +37,10 @@
     "react-qr-scanner": "1.0.0-alpha.11",
     "react-router-dom": "^6.24.0",
     "react-to-print": "^2.15.1",
+    "react-toastify": "^10.0.5",
     "react-webcam": "^7.2.0",
     "sweetalert2": "^11.12.2",
+    "sweetalert2-react-content": "^5.0.7",
     "yup": "^1.4.0"
   },
   "devDependencies": {
