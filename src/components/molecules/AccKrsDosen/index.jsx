@@ -5,10 +5,12 @@ import supabase from "@/client/supabase"; // Import supabase client
 import { jwtDecode } from "jwt-decode"; // Import jwt-decode untuk mendekode token JWT
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import SearchBar from "@components/atoms/SearchBar"; // Import SearchBar component
 
 const AccKrsDosen = () => {
   const [requests, setRequests] = useState([]);
   const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchUser();
@@ -110,11 +112,28 @@ const AccKrsDosen = () => {
     }
   };
 
+  const filteredRequests = requests.filter((request) => {
+    const matakuliah = request.matakuliah || {};
+    const mahasiswa = request.users || {};
+
+    return (
+      (matakuliah.nama &&
+        matakuliah.nama.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (mahasiswa.full_name &&
+        mahasiswa.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
+
   return (
     <div className="container mx-auto">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {requests.map((request) => {
+      <SearchBar
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Cari berdasarkan nama mahasiswa atau mata kuliah..."
+      />
+      <div className="grid grid-cols-1 gap-4 mt-4 lg:grid-cols-3">
+        {filteredRequests.map((request) => {
           const matakuliah = request.matakuliah || {};
           const mahasiswa = request.users || {};
 
