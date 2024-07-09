@@ -41,10 +41,12 @@ const saveUserToDatabase = async (user, accessToken) => {
   }
 
   try {
-    // Periksa apakah pengguna sudah ada di tabel 'users'
     const { data: existingUser } = await axios.get(
-      `${supabaseUrl}/rest/v1/users?user_id=eq.${user_id}`,
+      `${supabaseUrl}/rest/v1/users`,
       {
+        params: {
+          user_id: `eq.${user_id}`,
+        },
         headers: {
           apikey: supabaseKey,
           Authorization: `Bearer ${accessToken}`,
@@ -54,7 +56,6 @@ const saveUserToDatabase = async (user, accessToken) => {
     );
 
     if (existingUser.length === 0) {
-      // Jika pengguna tidak ada, tambahkan ke tabel 'users'
       const { data } = await axios.post(
         `${supabaseUrl}/rest/v1/users`,
         { user_id, email, full_name, role },

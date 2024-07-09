@@ -8,6 +8,8 @@ import {
   faUserCheck,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 const NavbarDosen = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +17,7 @@ const NavbarDosen = () => {
   const navbarRef = useRef(null);
   const dragHandleRef = useRef(null);
   const startY = useRef(null);
+  const [userId, setUserId] = useState(null); // State for user id
 
   const handleClickOutside = (event) => {
     if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -79,6 +82,25 @@ const NavbarDosen = () => {
     };
   }, []);
 
+  // Get user id from token
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken && decodedToken.id) {
+          setUserId(decodedToken.id); // Extract user ID from token
+        } else {
+          console.error("User ID tidak ditemukan dalam token");
+        }
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    } else {
+      console.error("Token tidak ditemukan");
+    }
+  }, []);
+
   return (
     <div ref={navbarRef} className="relative z-50">
       <div
@@ -102,7 +124,7 @@ const NavbarDosen = () => {
           {isOpen && (
             <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5">
               <Link
-                to="/jadwal-kelas"
+                to={`/jadwal-kelas/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >

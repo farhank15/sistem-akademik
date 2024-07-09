@@ -110,7 +110,7 @@ function App() {
           }
         />
         <Route
-          path="/jadwal-kelas"
+          path="/jadwal-kelas/:id"
           element={
             <ProtectedRoute allowedRoles={["dosen"]}>
               <JadwalKelas />

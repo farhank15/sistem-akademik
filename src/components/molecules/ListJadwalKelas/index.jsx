@@ -1,106 +1,125 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 import { FaCheck, FaEdit } from "react-icons/fa";
 import Card from "@components/atoms/Card";
 import Modal from "@components/atoms/Modal";
 import Tour from "@components/atoms/Tour";
+import supabase from "@/client/supabase";
+import Swal from "sweetalert2"; // Import SweetAlert
 
 const ListJadwalKelas = () => {
-  const initialClasses = [
-    {
-      day: "Senin",
-      time: "10:15 s/d 12:45",
-      course: "Kerja Praktek",
-      code: "TINKFM6023",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Ir. Budi Santoso",
-      room: "Ruang 101",
-      studentPresent: false,
-    },
-    {
-      day: "Selasa",
-      time: "13:00 s/d 15:30",
-      course: "Arsitektur Enterprise",
-      code: "TINKFM6013",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Prof. Dr. Siti Aminah",
-      room: "Ruang 202",
-      studentPresent: false,
-    },
-    {
-      day: "Selasa",
-      time: "10:15 s/d 12:45",
-      course: "Manajemen Resiko",
-      code: "TINKFM6063",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Andi Wijaya",
-      room: "Ruang 203",
-      studentPresent: false,
-    },
-    {
-      day: "Rabu",
-      time: "07:30 s/d 10:00",
-      course: "Kriptografi",
-      code: "TINKFM6043",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Maya Sari",
-      room: "Ruang 204",
-      studentPresent: false,
-    },
-    {
-      day: "Rabu",
-      time: "13:00 s/d 15:30",
-      course: "Manajemen Proyek",
-      code: "TINKFM6053",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Joko Susilo",
-      room: "Ruang 205",
-      studentPresent: false,
-    },
-    {
-      day: "Minggu",
-      time: "07:30 s/d 10:00",
-      course: "KKN",
-      code: "TINKFM6033",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Retno Wulan",
-      room: "Ruang 206",
-      studentPresent: false,
-    },
-    {
-      day: "Kamis",
-      time: "15:45 s/d 18:15",
-      course: "Manajemen dan Teknologi Migas (Kapita Selekta Migas)",
-      code: "UNKFM6013",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Ahmad Zaini",
-      room: "Ruang 207",
-      studentPresent: false,
-    },
-  ];
-
-  const [classes, setClasses] = useState(initialClasses);
-  const [filteredClasses, setFilteredClasses] = useState(initialClasses);
+  const [classes, setClasses] = useState([]);
+  const [filteredClasses, setFilteredClasses] = useState([]);
   const [editingClass, setEditingClass] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.id); // Set user ID from token
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchClasses(userId);
+    }
+  }, [userId]);
+
+  const fetchClasses = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from("jadwalkelas")
+        .select(
+          `
+          jadwal_kelas_id,
+          user_id,
+          mata_kuliah_id,
+          hari,
+          waktu_mulai,
+          waktu_selesai,
+          matakuliah (
+            kode,
+            nama,
+            semester,
+            sks
+          )
+        `
+        )
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Gagal mengambil data jadwal kelas:", error.message);
+        return;
+      }
+
+      setClasses(data);
+      setFilteredClasses(data);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = (index) => {
     setEditingClass({ ...filteredClasses[index], index });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingClass !== null) {
-      const newClasses = [...classes];
-      newClasses[editingClass.index] = editingClass;
-      setClasses(newClasses);
-      setFilteredClasses(newClasses);
-      setEditingClass(null);
+      const { jadwal_kelas_id, hari, waktu_mulai, waktu_selesai } =
+        editingClass;
+
+      try {
+        const { data, error } = await supabase
+          .from("jadwalkelas")
+          .update({ hari, waktu_mulai, waktu_selesai })
+          .eq("jadwal_kelas_id", jadwal_kelas_id);
+
+        if (error) {
+          console.error("Gagal memperbarui data jadwal kelas:", error.message);
+          Swal.fire({
+            icon: "error",
+            title: "Gagal!",
+            text: "Terjadi kesalahan dalam memperbarui jadwal kelas.",
+            showConfirmButton: false,
+            timer: 1200,
+          });
+          return;
+        }
+
+        const newClasses = [...classes];
+        newClasses[editingClass.index] = editingClass;
+        setClasses(newClasses);
+        setFilteredClasses(newClasses);
+        setEditingClass(null);
+
+        Swal.fire({
+          icon: "success",
+          title: "Sukses!",
+          text: "Berhasil memperbarui jadwal kelas.",
+          showConfirmButton: false,
+          timer: 1200,
+        });
+      } catch (error) {
+        console.error("Gagal memperbarui data:", error.message);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Terjadi kesalahan dalam memperbarui jadwal kelas.",
+          showConfirmButton: false,
+          timer: 1200,
+        });
+      }
     }
   };
 
@@ -114,9 +133,10 @@ const ListJadwalKelas = () => {
     setSearchTerm(value);
     const filtered = classes.filter(
       (item) =>
-        item.course.toLowerCase().includes(value.toLowerCase()) ||
-        item.instructor.toLowerCase().includes(value.toLowerCase()) ||
-        item.room.toLowerCase().includes(value.toLowerCase())
+        item.matakuliah.nama.toLowerCase().includes(value.toLowerCase()) ||
+        item.matakuliah.kode.toLowerCase().includes(value.toLowerCase()) ||
+        item.hari.toLowerCase().includes(value.toLowerCase()) ||
+        item.waktu_mulai.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredClasses(filtered);
   };
@@ -132,6 +152,10 @@ const ListJadwalKelas = () => {
     },
   ];
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto" style={{ userSelect: "none" }}>
       <Tour steps={steps} />
@@ -145,32 +169,32 @@ const ListJadwalKelas = () => {
               </label>
               <input
                 type="text"
-                name="day"
-                value={editingClass.day}
+                name="hari"
+                value={editingClass.hari}
                 onChange={handleChange}
                 className="w-full px-3 py-2 mt-1 border rounded-md text-primary-dark bg-neutral-light"
               />
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
-                Waktu
+                Waktu Mulai
               </label>
               <input
                 type="text"
-                name="time"
-                value={editingClass.time}
+                name="waktu_mulai"
+                value={editingClass.waktu_mulai}
                 onChange={handleChange}
                 className="w-full px-3 py-2 mt-1 border rounded-md text-primary-dark bg-neutral-light"
               />
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
-                Ruangan
+                Waktu Selesai
               </label>
               <input
                 type="text"
-                name="room"
-                value={editingClass.room}
+                name="waktu_selesai"
+                value={editingClass.waktu_selesai}
                 onChange={handleChange}
                 className="w-full px-3 py-2 mt-1 border rounded-md text-primary-dark bg-neutral-light"
               />
@@ -193,7 +217,7 @@ const ListJadwalKelas = () => {
             type="text"
             value={searchTerm}
             onChange={handleSearch}
-            placeholder="Cari mata kuliah, dosen, atau ruangan"
+            placeholder="Cari mata kuliah, kode, atau hari"
             className="w-full px-4 py-2 border rounded-md text-primary bg-neutral-light"
           />
         </div>
@@ -201,14 +225,16 @@ const ListJadwalKelas = () => {
           {filteredClasses.map((item, index) => (
             <Card
               key={index}
-              className={`p-4 ${
+              className={`p-4 flex justify-between ${
                 item.studentPresent ? "bg-green-100" : ""
               } card`}
             >
               <div className="flex justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold">{item.course}</h2>
-                  <p className="text-[12px] ">{item.instructor}</p>
+                  <h2 className="text-lg font-semibold">
+                    {item.matakuliah.nama}
+                  </h2>
+                  <p className="text-[12px]">{item.matakuliah.kode}</p>
                 </div>
                 {item.studentPresent ? (
                   <FaCheck className="text-green-500" />
@@ -222,10 +248,11 @@ const ListJadwalKelas = () => {
                 )}
               </div>
               <div className="flex justify-between mt-4 text-sm text-gray-400">
-                <p className="pt-5">{item.room}</p>
-                <div className="text-right">
-                  <p>{item.day}</p>
-                  <p>{item.time}</p>
+                <p>{item.hari}</p>
+                <div className="flex text-right">
+                  <p className="text-[12px]">
+                    {item.waktu_mulai} s/d {item.waktu_selesai}
+                  </p>
                 </div>
               </div>
             </Card>
