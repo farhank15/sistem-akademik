@@ -18,6 +18,7 @@ import RekapPresensi from "@pages/RekapPresensi";
 import RiwayatKelas from "@pages/RiwayatKelas";
 import AccKrs from "@pages/AccKrs";
 import Bantuan from "@pages/Bantuan";
+import PembimbingAkademik from "@pages/PembimbingAkademik";
 
 function App() {
   return (
@@ -149,6 +150,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["dosen"]}>
               <AccKrs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pembimbing-akademik/:id"
+          element={
+            <ProtectedRoute allowedRoles={["dosen"]}>
+              <PembimbingAkademik />
             </ProtectedRoute>
           }
         />

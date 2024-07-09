@@ -73,8 +73,7 @@ const Pembimbing = () => {
   };
 
   return (
-    <div className="container p-6 mx-auto">
-      <h1 className="mb-4 text-2xl font-bold">Pembimbing Akademik</h1>
+    <div className="container mx-auto">
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -82,11 +81,11 @@ const Pembimbing = () => {
           {students.map((student) => (
             <Card
               key={student.profil_mahasiswa_id}
-              className="p-4 bg-white rounded-lg shadow-md"
+              className="p-4 rounded-lg shadow-md"
             >
               <h2 className="text-xl font-semibold">{student.nama}</h2>
-              <p className="text-gray-600">{student.email}</p>
-              <p className="text-gray-600">Status: {student.status}</p>
+              <p className="text-gray-300">{student.email}</p>
+              <p className="text-gray-300">Status: {student.status}</p>
             </Card>
           ))}
         </div>

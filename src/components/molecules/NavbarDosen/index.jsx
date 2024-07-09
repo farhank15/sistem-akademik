@@ -168,7 +168,7 @@ const NavbarDosen = () => {
                 Presensi Mahasiswa
               </Link>
               <Link
-                to="/pembimbing-akademik"
+                to={`/pembimbing-akademik/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
                 onClick={handleLinkClick}
               >
