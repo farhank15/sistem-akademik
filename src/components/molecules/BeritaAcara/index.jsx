@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import { FaCheck, FaEdit, FaBarcode } from "react-icons/fa";
+import { FaEdit, FaBarcode } from "react-icons/fa";
 import Card from "@components/atoms/Card";
 import supabase from "@/client/supabase"; // Ensure this points to the correct Supabase client
 import moment from "moment-timezone";
@@ -154,7 +154,7 @@ const BeritaAcara = () => {
     }
   };
 
-  const handleAttendance = (
+  const handleAttendance = async (
     jadwalKelasId,
     mataKuliahId,
     hari,
@@ -162,59 +162,116 @@ const BeritaAcara = () => {
     waktuSelesai,
     ruangId
   ) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        MySwal.fire({
-          title: "Buka Acara",
-          text: "Apakah Anda yakin ingin membuka presensi?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Ya, buka!",
-          cancelButtonText: "Tidak, batal",
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            const { error } = await supabase.from("riwayatpresensi").insert([
-              {
-                user_id: userId,
-                jadwal_kelas_id: jadwalKelasId,
-                latitude: latitude,
-                longitude: longitude,
-              },
-            ]);
-
-            if (error) {
-              Swal.fire("Gagal!", "Gagal menyimpan riwayat presensi.", "error");
-            } else {
-              const updatedAttendanceOpened = {
-                ...attendanceOpened,
-                [jadwalKelasId]: true,
-              };
-              setAttendanceOpened(updatedAttendanceOpened);
-              // Save the updated attendanceOpened state to localStorage
-              localStorage.setItem(
-                "attendanceOpened",
-                JSON.stringify(updatedAttendanceOpened)
-              );
-
-              // Show QR code or message
-              MySwal.fire({
-                title: "Barcode Presensi",
-                html: `<div style="display: flex; justify-content: center; align-items: center;">
-                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${jadwalKelasId}" alt="barcode" />
-                       </div>`,
-                confirmButtonText: "Tutup",
-              });
-            }
-          }
-        });
-      });
-    } else {
-      Swal.fire(
-        "Gagal!",
-        "Geolocation tidak didukung oleh browser Anda.",
-        "error"
+    try {
+      const currentTime = moment().tz("Asia/Jakarta").format("HH:mm:ss");
+      const currentTimeObject = moment.tz(
+        `1970-01-01T${currentTime}`,
+        "Asia/Jakarta"
       );
+
+      const { data: existingSessions, error: sessionsError } = await supabase
+        .from("riwayatpresensi")
+        .select("id, created_at")
+        .eq("jadwal_kelas_id", jadwalKelasId)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (sessionsError) {
+        console.error("Gagal memeriksa sesi presensi:", sessionsError.message);
+        return;
+      }
+
+      if (
+        existingSessions.length > 0 &&
+        currentTimeObject.isBefore(
+          moment(existingSessions[0].created_at)
+            .add(1, "hours")
+            .tz("Asia/Jakarta")
+        )
+      ) {
+        Swal.fire(
+          "Tidak Bisa Dibuka",
+          "Sesi presensi sudah dibuka dan belum berakhir.",
+          "warning"
+        );
+        return;
+      }
+
+      MySwal.fire({
+        title: "Buat Berita Acara",
+        text: "Apakah Anda ingin membuat berita acara sebelum membuka presensi?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Ya, buat!",
+        cancelButtonText: "Tidak, batal",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+              const { latitude, longitude } = position.coords;
+              MySwal.fire({
+                title: "Buka Acara",
+                text: "Apakah Anda yakin ingin membuka presensi?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Ya, buka!",
+                cancelButtonText: "Tidak, batal",
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  const { error } = await supabase
+                    .from("riwayatpresensi")
+                    .insert([
+                      {
+                        user_id: userId,
+                        jadwal_kelas_id: jadwalKelasId,
+                        latitude: latitude,
+                        longitude: longitude,
+                      },
+                    ]);
+
+                  if (error) {
+                    Swal.fire(
+                      "Gagal!",
+                      "Gagal menyimpan riwayat presensi.",
+                      "error"
+                    );
+                  } else {
+                    const updatedAttendanceOpened = {
+                      ...attendanceOpened,
+                      [jadwalKelasId]: true,
+                    };
+                    setAttendanceOpened(updatedAttendanceOpened);
+                    // Save the updated attendanceOpened state to localStorage
+                    localStorage.setItem(
+                      "attendanceOpened",
+                      JSON.stringify(updatedAttendanceOpened)
+                    );
+
+                    // Show QR code or message
+                    MySwal.fire({
+                      title: "Barcode Presensi",
+                      html: `<div style="display: flex; justify-content: center; align-items: center;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${jadwalKelasId}" alt="barcode" />
+                             </div>`,
+                      confirmButtonText: "Tutup",
+                    });
+                  }
+                }
+              });
+            });
+          } else {
+            Swal.fire(
+              "Gagal!",
+              "Geolocation tidak didukung oleh browser Anda.",
+              "error"
+            );
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error handling attendance:", error);
+      Swal.fire("Gagal", "Gagal membuka presensi.", "error");
     }
   };
 
@@ -244,7 +301,7 @@ const BeritaAcara = () => {
             <Card
               key={index}
               className={`p-4 flex justify-between ${
-                item.studentPresent ? "bg-green-100" : ""
+                attendanceOpened[item.jadwal_kelas_id] ? "bg-green-100" : ""
               } card`}
             >
               <div className="flex justify-between">
@@ -254,9 +311,7 @@ const BeritaAcara = () => {
                   </h2>
                   <p className="text-[11px] mt-2">{item.matakuliah.kode}</p>
                 </div>
-                {item.studentPresent ? (
-                  <FaCheck className="text-green-500 " />
-                ) : attendanceOpened[item.jadwal_kelas_id] ? (
+                {attendanceOpened[item.jadwal_kelas_id] ? (
                   <FaBarcode
                     size={28}
                     className="text-blue-500 cursor-pointer"

@@ -129,14 +129,39 @@ const DaftarKrs = () => {
         console.error("Gagal menghapus dari KRS:", error.message);
       }
     } else {
-      // Tambahkan ke KRSApproval
       try {
+        // Ambil dosen_dospem_id berdasarkan user_id
+        const { data: mahasiswaData, error: mahasiswaError } = await supabase
+          .from("profil_mahasiswa")
+          .select("profil_mahasiswa_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (mahasiswaError) {
+          throw mahasiswaError;
+        }
+
+        const { data: dospemData, error: dospemError } = await supabase
+          .from("dosen_dospem")
+          .select("dosen_dospem_id")
+          .eq("mahasiswa_id", mahasiswaData.profil_mahasiswa_id)
+          .eq("status", "Aktif")
+          .single();
+
+        if (dospemError) {
+          throw dospemError;
+        }
+
+        const dosenDospemId = dospemData.dosen_dospem_id;
+
+        // Tambahkan ke KRSApproval
         const { data: insertData, error: insertError } = await supabase
           .from("krsapproval")
           .insert([
             {
               mata_kuliah_id: course.mata_kuliah_id,
               user_id: user.id,
+              dosen_dospem_id: dosenDospemId,
               status: "Pending",
               tanggal: new Date().toISOString().slice(0, 10), // Tanggal hari ini
             },

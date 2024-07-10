@@ -18,7 +18,7 @@ const AccKrsDosen = () => {
 
   useEffect(() => {
     if (user) {
-      fetchKrsRequests();
+      fetchKrsRequests(user.id);
     }
   }, [user]);
 
@@ -35,9 +35,49 @@ const AccKrsDosen = () => {
     }
   };
 
-  const fetchKrsRequests = async () => {
+  const fetchKrsRequests = async (userId) => {
     try {
-      const { data, error } = await supabase
+      // Ambil profil_dosen_id dari Profil_Dosen
+      const { data: dosenData, error: dosenError } = await supabase
+        .from("profil_dosen")
+        .select("profil_dosen_id")
+        .eq("user_id", userId)
+        .single();
+
+      if (dosenError) {
+        throw dosenError;
+      }
+
+      const profilDosenId = dosenData.profil_dosen_id;
+
+      // Ambil mahasiswa_id dari Dosen_Dospem
+      const { data: dospemData, error: dospemError } = await supabase
+        .from("dosen_dospem")
+        .select("dosen_dospem_id, mahasiswa_id")
+        .eq("dosen_id", profilDosenId)
+        .eq("status", "Aktif");
+
+      if (dospemError) {
+        throw dospemError;
+      }
+
+      const mahasiswaIds = dospemData.map((d) => d.mahasiswa_id);
+      const dosenDospemIds = dospemData.map((d) => d.dosen_dospem_id);
+
+      // Ambil user_id dari Profil_Mahasiswa
+      const { data: mahasiswaData, error: mahasiswaError } = await supabase
+        .from("profil_mahasiswa")
+        .select("user_id")
+        .in("profil_mahasiswa_id", mahasiswaIds);
+
+      if (mahasiswaError) {
+        throw mahasiswaError;
+      }
+
+      const mahasiswaUserIds = mahasiswaData.map((m) => m.user_id);
+
+      // Ambil data KRSApproval berdasarkan dosen_dospem_id dan user_id mahasiswa
+      const { data: krsData, error: krsError } = await supabase
         .from("krsapproval")
         .select(
           `
@@ -57,15 +97,16 @@ const AccKrsDosen = () => {
           )
         `
         )
-        .eq("matakuliah.user_id", user.id) // Dosen yang mengajar mata kuliah
+        .in("user_id", mahasiswaUserIds)
+        .in("dosen_dospem_id", dosenDospemIds)
         .eq("status", "Pending");
 
-      if (error) {
-        throw error;
+      if (krsError) {
+        throw krsError;
       }
 
-      if (data) {
-        setRequests(data);
+      if (krsData) {
+        setRequests(krsData);
       }
     } catch (error) {
       console.error("Gagal mengambil data pengajuan KRS:", error.message);

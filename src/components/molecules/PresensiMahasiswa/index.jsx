@@ -1,107 +1,175 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaQrcode, FaCheck } from "react-icons/fa";
 import Card from "@components/atoms/Card";
 import Webcam from "react-webcam";
 import jsQR from "jsqr";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import supabase from "@/client/supabase";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import Tour from "@components/atoms/Tour";
 
-const PresensiMahasiswa = () => {
-  const initialClasses = [
-    {
-      day: "Senin",
-      time: "10:15 s/d 12:45",
-      course: "Kerja Praktek",
-      code: "TINKFM6023",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Ir. Budi Santoso",
-      room: "Ruang 101",
-      studentPresent: false,
-    },
-    {
-      day: "Selasa",
-      time: "13:00 s/d 15:30",
-      course: "Arsitektur Enterprise",
-      code: "TINKFM6013",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Prof. Dr. Siti Aminah",
-      room: "Ruang 202",
-      studentPresent: false,
-    },
-    {
-      day: "Selasa",
-      time: "10:15 s/d 12:45",
-      course: "Manajemen Resiko",
-      code: "TINKFM6063",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Andi Wijaya",
-      room: "Ruang 203",
-      studentPresent: false,
-    },
-    {
-      day: "Rabu",
-      time: "07:30 s/d 10:00",
-      course: "Kriptografi",
-      code: "TINKFM6043",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Maya Sari",
-      room: "Ruang 204",
-      studentPresent: false,
-    },
-    {
-      day: "Rabu",
-      time: "13:00 s/d 15:30",
-      course: "Manajemen Proyek",
-      code: "TINKFM6053",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Joko Susilo",
-      room: "Ruang 205",
-      studentPresent: false,
-    },
-    {
-      day: "Minggu",
-      time: "07:30 s/d 10:00",
-      course: "KKN",
-      code: "TINKFM6033",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Retno Wulan",
-      room: "Ruang 206",
-      studentPresent: false,
-    },
-    {
-      day: "Kamis",
-      time: "15:45 s/d 18:15",
-      course: "Manajemen dan Teknologi Migas (Kapita Selekta Migas)",
-      code: "UNKFM6013",
-      sks: 3,
-      semester: "Genap",
-      instructor: "Dr. Ahmad Zaini",
-      room: "Ruang 207",
-      studentPresent: false,
-    },
-  ];
+const MySwal = withReactContent(Swal);
 
-  const [classes, setClasses] = useState(initialClasses);
+const PresensiMahasiswa = () => {
+  const [classes, setClasses] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [scanIndex, setScanIndex] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [attendanceStatus, setAttendanceStatus] = useState({});
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const handleScan = (data) => {
-    if (data) {
-      markPresent(scanIndex);
-      setScanning(false);
-      setScanIndex(null);
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.id);
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchClasses();
+      fetchAttendanceStatus(userId);
+    }
+  }, [userId]);
+
+  const fetchClasses = async () => {
+    try {
+      const { data, error } = await supabase.from("jadwalkelas").select(
+        `
+          jadwal_kelas_id,
+          hari,
+          waktu_mulai,
+          waktu_selesai,
+          matakuliah (
+            kode,
+            nama,
+            semester,
+            sks
+          ),
+          ruangkelas:ruang_id (
+            nama
+          )
+        `
+      );
+
+      if (error) {
+        console.error("Gagal mengambil data jadwal kelas:", error.message);
+        return;
+      }
+
+      const formattedData = data.map((item) => ({
+        ...item,
+        day: item.hari,
+        time: `${item.waktu_mulai} s/d ${item.waktu_selesai}`,
+        course: item.matakuliah.nama,
+        code: item.matakuliah.kode,
+        sks: item.matakuliah.sks,
+        semester: item.matakuliah.semester,
+        instructor: "", // You may need to fetch the instructor's name separately
+        room: item.ruangkelas.nama,
+        studentPresent: false,
+      }));
+
+      setClasses(formattedData);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error.message);
     }
   };
 
-  const handleError = (err) => {
-    console.error("Scan error:", err);
+  const fetchAttendanceStatus = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from("presensi")
+        .select("jadwal_kelas_id")
+        .eq("user_id", userId)
+        .eq("status", "Hadir");
+
+      if (error) {
+        console.error("Gagal mengambil data presensi:", error.message);
+        return;
+      }
+
+      const status = data.reduce((acc, curr) => {
+        acc[curr.jadwal_kelas_id] = true;
+        return acc;
+      }, {});
+
+      setAttendanceStatus(status);
+    } catch (error) {
+      console.error("Gagal mengambil data presensi:", error.message);
+    }
+  };
+
+  const handleScan = async (data) => {
+    if (data && userId) {
+      const jadwalKelasId = data;
+
+      try {
+        const { data: riwayatPresensi, error: errorRiwayat } = await supabase
+          .from("riwayatpresensi")
+          .select("*")
+          .eq("jadwal_kelas_id", jadwalKelasId)
+          .single();
+
+        if (errorRiwayat) {
+          console.error(
+            "Gagal mengambil data riwayat presensi:",
+            errorRiwayat.message
+          );
+          Swal.fire("Gagal", "Gagal mengambil data riwayat presensi.", "error");
+          return;
+        }
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+
+            const { error } = await supabase.from("presensi").insert([
+              {
+                user_id: userId,
+                riwayatpresensi_id: riwayatPresensi.id,
+                status: "Hadir",
+                latitude: latitude,
+                longitude: longitude,
+              },
+            ]);
+
+            if (error) {
+              console.error("Gagal menyimpan presensi:", error.message);
+              Swal.fire("Gagal", "Gagal menyimpan presensi.", "error");
+            } else {
+              const updatedStatus = {
+                ...attendanceStatus,
+                [jadwalKelasId]: true,
+              };
+              setAttendanceStatus(updatedStatus);
+              markPresent(scanIndex);
+              Swal.fire("Berhasil", "Presensi berhasil disimpan.", "success");
+            }
+          });
+        } else {
+          Swal.fire(
+            "Gagal",
+            "Geolocation tidak didukung oleh browser Anda.",
+            "error"
+          );
+        }
+      } catch (error) {
+        console.error("Error scanning barcode:", error);
+        Swal.fire("Gagal", "Gagal menyimpan presensi.", "error");
+      }
+
+      setScanning(false);
+      setScanIndex(null);
+    }
   };
 
   const startScan = async (index) => {
@@ -202,7 +270,9 @@ const PresensiMahasiswa = () => {
             <Card
               key={index}
               className={`p-4 ${
-                item.studentPresent ? "bg-green-100" : ""
+                item.studentPresent || attendanceStatus[item.jadwal_kelas_id]
+                  ? "bg-green-100"
+                  : ""
               } card`}
             >
               <div className="flex justify-between">
@@ -210,7 +280,8 @@ const PresensiMahasiswa = () => {
                   <h2 className="text-lg font-semibold">{item.course}</h2>
                   <p className="text-[12px] ">{item.instructor}</p>
                 </div>
-                {item.studentPresent ? (
+                {item.studentPresent ||
+                attendanceStatus[item.jadwal_kelas_id] ? (
                   <FaCheck className="text-green-500" />
                 ) : (
                   <button
