@@ -11,6 +11,7 @@ const AvatarMol = ({ avatarUrl }) => {
   const [isCardOpen, setIsCardOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [dospem, setDospem] = useState(null);
   const cardRef = useRef(null);
   const avatarRef = useRef(null);
 
@@ -74,14 +75,16 @@ const AvatarMol = ({ avatarUrl }) => {
       if (userProfile.role === "mahasiswa") {
         const { data, error } = await supabase
           .from("profil_mahasiswa")
-          .select("nama, email")
+          .select("nama, email, profil_mahasiswa_id")
           .eq("user_id", userProfile.id)
           .single();
 
         if (error) {
           throw error;
         }
-        profileData = data;
+        profileData = { ...data, role: userProfile.role }; // Adding role to profileData
+
+        await fetchDospemData(profileData.profil_mahasiswa_id);
       } else if (userProfile.role === "dosen") {
         const { data, error } = await supabase
           .from("profil_dosen")
@@ -92,7 +95,7 @@ const AvatarMol = ({ avatarUrl }) => {
         if (error) {
           throw error;
         }
-        profileData = data;
+        profileData = { ...data, role: userProfile.role }; // Adding role to profileData
       } else {
         throw new Error("Peran pengguna tidak dikenal");
       }
@@ -100,6 +103,35 @@ const AvatarMol = ({ avatarUrl }) => {
       setUserData(profileData);
     } catch (error) {
       console.error("Gagal mengambil data pengguna:", error.message);
+    }
+  };
+
+  const fetchDospemData = async (mahasiswaId) => {
+    try {
+      const { data: dospemData, error: dospemError } = await supabase
+        .from("dosen_dospem")
+        .select("dosen_id")
+        .eq("mahasiswa_id", mahasiswaId)
+        .eq("status", "Aktif")
+        .single();
+
+      if (dospemError) {
+        throw dospemError;
+      }
+
+      const { data: dosenProfile, error: dosenProfileError } = await supabase
+        .from("profil_dosen")
+        .select("nama")
+        .eq("profil_dosen_id", dospemData.dosen_id)
+        .single();
+
+      if (dosenProfileError) {
+        throw dosenProfileError;
+      }
+
+      setDospem(dosenProfile.nama);
+    } catch (error) {
+      console.error("Gagal mengambil data dospem:", error.message);
     }
   };
 
@@ -113,7 +145,6 @@ const AvatarMol = ({ avatarUrl }) => {
       if (error) {
         console.error("Logout gagal", error);
       } else {
-        console.log("Logout berhasil");
         Cookies.remove("user_session");
         localStorage.removeItem("selectedAvatar");
         window.location.reload();
@@ -166,6 +197,9 @@ const AvatarMol = ({ avatarUrl }) => {
                 {userData.nama}
               </h2>
               <p className="text-[12px] text-neutral">{userData.email}</p>
+              {userData.role === "mahasiswa" && dospem && (
+                <p className="text-[12px] text-neutral">{dospem}</p>
+              )}
             </div>
           </div>
           <div className="mt-4">
