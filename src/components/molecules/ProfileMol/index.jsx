@@ -1,29 +1,157 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiEdit } from "react-icons/fi";
 import FormInput from "@components/atoms/FormInput";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import supabase from "@/client/supabase";
+import {
+  RandomAvatars,
+  getRandomAvatar,
+} from "@components/atoms/RandomAvatars";
 import gambar from "@assets/images/fototest.jpeg";
 
 const ProfileMol = () => {
   const [profileImage, setProfileImage] = useState(gambar);
-  const [formData] = useState({
-    birthPlace: "Lamongan",
-    birthDate: "2003-02-25",
-    address:
-      "RT01/RW03, Dsn.Ngablak Ds.Prijekngablak kec.Karanggeneng Kab.Lamongan Jawa timur, RT/RW: 0/0, Kode Pos: 0",
-    gender: "Laki-laki",
-    religion: "Islam",
-    status: "Belum menikah",
-    nationality: "WNI",
-    education: "SMAN 1 SEKARAN",
-    major: "MIPA",
-    email: "farhank22@gmail.com",
-    phone: "081234567890",
-    studyProgram: "Teknologi Informasi",
-    faculty: "Fakultas Teknologi Informasi",
-    curriculumYear: "2020",
-    credits: "144",
-    batch: "2020",
+  const [userId, setUserId] = useState(null);
+  const [avatar, setAvatar] = useState(getRandomAvatar());
+  const [formData, setFormData] = useState({
+    birthPlace: "",
+    birthDate: "",
+    address: "",
+    gender: "",
+    religion: "",
+    status: "",
+    nationality: "",
+    education: "",
+    major: "",
+    email: "",
+    phone: "",
+    studyProgram: "",
+    faculty: "",
+    curriculumYear: "",
+    credits: "",
+    batch: "",
+    advisor: "",
+    name: "",
   });
+
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.id);
+        fetchUserProfile(decodedToken.id);
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
+  }, []);
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      const { data: userProfile, error: profileError } = await supabase
+        .from("users")
+        .select("id, role")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      let profileData;
+      if (userProfile.role === "mahasiswa") {
+        const { data, error } = await supabase
+          .from("profil_mahasiswa")
+          .select("*")
+          .eq("user_id", userProfile.id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const { data: dospemData, error: dospemError } = await supabase
+          .from("dosen_dospem")
+          .select("dosen_id")
+          .eq("mahasiswa_id", data.profil_mahasiswa_id)
+          .eq("status", "Aktif")
+          .single();
+
+        if (!dospemError && dospemData) {
+          const { data: dosenProfile, error: dosenProfileError } =
+            await supabase
+              .from("profil_dosen")
+              .select("nama")
+              .eq("profil_dosen_id", dospemData.dosen_id)
+              .single();
+
+          if (!dosenProfileError && dosenProfile) {
+            data.advisor = dosenProfile.nama;
+          }
+        }
+
+        profileData = {
+          birthPlace: data.tempat_lahir,
+          birthDate: data.tanggal_lahir,
+          address: data.alamat,
+          gender: data.jenis_kelamin,
+          religion: data.agama,
+          status: data.status,
+          nationality: data.kewarganegaraan,
+          education: data.pendidikan_terakhir,
+          major: data.jurusan,
+          email: data.email,
+          phone: data.nomor_hp,
+          studyProgram: data.program_studi,
+          faculty: data.fakultas,
+          curriculumYear: data.tahun_kurikulum,
+          credits: data.sks_saat_ini,
+          batch: data.angkatan,
+          advisor: data.advisor || "N/A",
+          name: data.nama,
+        };
+      } else if (userProfile.role === "dosen") {
+        const { data, error } = await supabase
+          .from("profil_dosen")
+          .select("*")
+          .eq("user_id", userProfile.id)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        profileData = {
+          birthPlace: data.tempat_lahir,
+          birthDate: data.tanggal_lahir,
+          address: data.alamat,
+          gender: data.jenis_kelamin,
+          religion: data.agama,
+          status: data.status,
+          nationality: data.kewarganegaraan,
+          education: data.pendidikan_terakhir,
+          email: data.email,
+          phone: data.nomor_hp,
+          major: "N/A",
+          studyProgram: "N/A",
+          faculty: "N/A",
+          curriculumYear: "N/A",
+          credits: "N/A",
+          batch: "N/A",
+          advisor: "N/A",
+          name: data.nama,
+        };
+      } else {
+        throw new Error("Peran pengguna tidak dikenal");
+      }
+
+      setFormData(profileData);
+    } catch (error) {
+      console.error("Gagal mengambil data pengguna:", error.message);
+    }
+  };
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -40,11 +168,7 @@ const ProfileMol = () => {
       <div className="flex flex-col items-center md:flex-row md:items-start md:space-x-6">
         <div className="relative flex flex-col items-center">
           <div className="relative w-48 h-48 mb-4 overflow-hidden rounded-full md:w-80 md:h-80">
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="object-cover w-full h-full"
-            />
+            <RandomAvatars selectedAvatar={avatar} />
           </div>
           <label
             htmlFor="file-input"
@@ -60,9 +184,8 @@ const ProfileMol = () => {
             onChange={handleImageChange}
           />
           <h1 className="mt-4 text-3xl font-bold text-secondary">
-            Ahmad Farhan Kholik
+            {formData.name}
           </h1>
-          <p className="text-sm text-secondary">21450410030</p>
 
           <div className="w-full mt-6 space-y-6">
             <div className="w-[22rem] md:w-auto p-6 border shadow-lg card border-neutral">
@@ -240,7 +363,7 @@ const ProfileMol = () => {
                   Status Mahasiswa
                 </h2>
                 <p className="mt-2">Aktif, Semester 4</p>
-                <p className="mt-2">Wali Dosen: Dr. John Doe</p>
+                <p className="mt-2">Wali Dosen: {formData.advisor}</p>
               </div>
 
               <div className="w-full p-6 transition-transform duration-500 border shadow-lg card bg-primary hover:scale-105 border-neutral">

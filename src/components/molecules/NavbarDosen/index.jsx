@@ -7,6 +7,7 @@ import {
   faHistory,
   faUserCheck,
   faUserGraduate,
+  faHome,
 } from "@fortawesome/free-solid-svg-icons";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -122,7 +123,15 @@ const NavbarDosen = () => {
       >
         <div className="container flex items-center justify-center h-full mx-auto">
           {isOpen && (
-            <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5">
+            <div className="grid w-full grid-cols-3 gap-2 px-2 text-center md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6">
+              <Link
+                to="/"
+                className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"
+                onClick={handleLinkClick}
+              >
+                <FontAwesomeIcon icon={faHome} size="xl" className="mb-3" />
+                Beranda
+              </Link>
               <Link
                 to={`/jadwal-kelas/${userId}`}
                 className="text-primary-dark py-2 text-[12px] hover:shadow-lg hover:rounded-lg transition-shadow duration-300 flex flex-col items-center"

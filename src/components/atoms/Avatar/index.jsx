@@ -12,6 +12,7 @@ const AvatarMol = ({ avatarUrl }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [userData, setUserData] = useState(null);
   const [dospem, setDospem] = useState(null);
+  const [userId, setUserId] = useState(null);
   const cardRef = useRef(null);
   const avatarRef = useRef(null);
 
@@ -45,22 +46,21 @@ const AvatarMol = ({ avatarUrl }) => {
   }, []);
 
   useEffect(() => {
-    fetchUserData();
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.id || decodedToken.sub;
+        setUserId(userId);
+        fetchUserData(userId);
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
   }, []);
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (userId) => {
     try {
-      const token = Cookies.get("user_session");
-      if (!token) {
-        throw new Error("Token tidak ditemukan");
-      }
-      const decoded = jwtDecode(token);
-      const userId = decoded.sub || decoded.id;
-
-      if (!userId) {
-        throw new Error("ID pengguna tidak ditemukan dalam token");
-      }
-
       const { data: userProfile, error: profileError } = await supabase
         .from("users")
         .select("id, role")
@@ -204,7 +204,7 @@ const AvatarMol = ({ avatarUrl }) => {
           </div>
           <div className="mt-4">
             <Link
-              to="/profile-setting"
+              to={`/profile-setting/${userId}`}
               className="flex items-center justify-start w-full space-x-2 text-neutral btn btn-outline hover:text-neutral-light hover:bg-primary-light"
               onClick={handleSettingsClick}
             >

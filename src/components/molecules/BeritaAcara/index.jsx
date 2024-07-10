@@ -3,9 +3,9 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { FaEdit, FaBarcode } from "react-icons/fa";
 import Card from "@components/atoms/Card";
-import supabase from "@/client/supabase"; // Ensure this points to the correct Supabase client
+import supabase from "@/client/supabase"; // Pastikan ini mengarah ke klien Supabase yang benar
 import moment from "moment-timezone";
-import "moment/locale/id"; // Import locale Indonesian
+import "moment/locale/id"; // Impor locale Indonesia
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -17,7 +17,6 @@ const BeritaAcara = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [attendanceOpened, setAttendanceOpened] = useState(() => {
-    // Load attendanceOpened status from localStorage
     const savedStatus = localStorage.getItem("attendanceOpened");
     return savedStatus ? JSON.parse(savedStatus) : {};
   });
@@ -37,7 +36,7 @@ const BeritaAcara = () => {
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
-        setUserId(decodedToken.id); // Set user ID from token
+        setUserId(decodedToken.id); // Setel ID pengguna dari token
       } catch (error) {
         console.error("Token tidak valid:", error);
       }
@@ -47,15 +46,15 @@ const BeritaAcara = () => {
   useEffect(() => {
     if (userId) {
       fetchClasses(userId);
-      const intervalId = setInterval(() => fetchClasses(userId), 60000); // Update every minute
-      return () => clearInterval(intervalId); // Cleanup interval on component unmount
+      const intervalId = setInterval(() => fetchClasses(userId), 60000); // Perbarui setiap satu menit
+      return () => clearInterval(intervalId); // Membersihkan interval saat komponen tidak dipasang
     }
   }, [userId]);
 
   const fetchClasses = async (userId) => {
     try {
-      const currentTime = moment().tz("Asia/Jakarta").format("HH:mm:ss"); // Get current time in HH:mm:ss format
-      moment.locale("id"); // Set locale to Indonesian
+      const currentTime = moment().tz("Asia/Jakarta").format("HH:mm:ss"); // Dapatkan waktu saat ini dalam format HH:mm:ss
+      moment.locale("id"); // Setel bahasa ke Indonesia
       const currentDayInIndonesian = moment().tz("Asia/Jakarta").format("dddd");
 
       const { data, error } = await supabase
@@ -94,17 +93,17 @@ const BeritaAcara = () => {
         return;
       }
 
-      // Translate day from Indonesian to English for processing
+      // Terjemahkan hari dari bahasa Indonesia ke bahasa Inggris untuk diproses
       const translatedData = data.map((item) => ({
         ...item,
         hariEnglish: dayMappingToEnglish[item.hari] || item.hari,
       }));
 
-      // Get current day in English
-      moment.locale("en"); // Set locale to English
+      // Dapatkan hari saat ini dalam bahasa Inggris
+      moment.locale("en"); // Setel bahasa ke Inggris
       const currentDayInEnglish = moment().tz("Asia/Jakarta").format("dddd");
 
-      // Filter data based on current day and time
+      // Filter data berdasarkan hari dan waktu saat ini
       const currentTimeObject = moment.tz(
         `1970-01-01T${currentTime}`,
         "Asia/Jakarta"
@@ -119,7 +118,7 @@ const BeritaAcara = () => {
           `1970-01-01T${item.waktu_selesai}`,
           "Asia/Jakarta"
         );
-        // Check if attendance is opened or class time is not yet over
+        // Periksa apakah presensi sudah dibuka atau waktu kelas belum selesai
         return currentTimeObject.isBetween(
           startTimeObject,
           endTimeObject,
@@ -128,7 +127,7 @@ const BeritaAcara = () => {
         );
       });
 
-      // Update attendanceOpened state to reset after class time
+      // Perbarui status attendanceOpened untuk direset setelah waktu kelas berakhir
       const updatedAttendanceOpened = { ...attendanceOpened };
       filteredData.forEach((item) => {
         const endTimeObject = moment.tz(
@@ -242,13 +241,13 @@ const BeritaAcara = () => {
                       [jadwalKelasId]: true,
                     };
                     setAttendanceOpened(updatedAttendanceOpened);
-                    // Save the updated attendanceOpened state to localStorage
+                    // Simpan status attendanceOpened yang diperbarui ke localStorage
                     localStorage.setItem(
                       "attendanceOpened",
                       JSON.stringify(updatedAttendanceOpened)
                     );
 
-                    // Show QR code or message
+                    // Tampilkan QR code atau pesan
                     MySwal.fire({
                       title: "Barcode Presensi",
                       html: `<div style="display: flex; justify-content: center; align-items: center;">

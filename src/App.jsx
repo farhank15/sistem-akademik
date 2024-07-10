@@ -24,23 +24,9 @@ function App() {
   return (
     <Appshell>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute allowedRoles={["mahasiswa"]}>
-              <Beranda />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<Beranda />} />
         <Route path="/login" element={<LoginForm />} />
-        <Route
-          path="/profile-setting"
-          element={
-            <ProtectedRoute allowedRoles={["mahasiswa"]}>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/profile-setting/:id" element={<Profile />} />
         <Route
           path="/presensi"
           element={
