@@ -35,50 +35,107 @@ const PresensiMahasiswa = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchClasses();
+      fetchStudentCourses(userId); // Fetch the courses the student is enrolled in
       fetchAttendanceStatus(userId);
     }
   }, [userId]);
 
-  const fetchClasses = async () => {
+  const fetchStudentCourses = async (userId) => {
     try {
-      const { data, error } = await supabase.from("jadwalkelas").select(
-        `
-          jadwal_kelas_id,
-          hari,
-          waktu_mulai,
-          waktu_selesai,
-          matakuliah (
-            kode,
-            nama,
-            semester,
-            sks
-          ),
-          ruangkelas:ruang_id (
-            nama
-          )
-        `
-      );
+      // Ambil profil_mahasiswa_id dari profil_mahasiswa
+      const { data: mahasiswaData, error: mahasiswaError } = await supabase
+        .from("profil_mahasiswa")
+        .select("profil_mahasiswa_id")
+        .eq("user_id", userId)
+        .single();
 
-      if (error) {
-        console.error("Gagal mengambil data jadwal kelas:", error.message);
+      if (mahasiswaError) {
+        console.error(
+          "Gagal mengambil profil mahasiswa:",
+          mahasiswaError.message
+        );
         return;
       }
 
-      const formattedData = data.map((item) => ({
-        ...item,
-        day: item.hari,
-        time: `${item.waktu_mulai} s/d ${item.waktu_selesai}`,
-        course: item.matakuliah.nama,
-        code: item.matakuliah.kode,
-        sks: item.matakuliah.sks,
-        semester: item.matakuliah.semester,
-        instructor: "", // You may need to fetch the instructor's name separately
-        room: item.ruangkelas.nama,
-        studentPresent: false,
-      }));
+      const profilMahasiswaId = mahasiswaData.profil_mahasiswa_id;
 
-      setClasses(formattedData);
+      // Ambil mata_kuliah_id dari mahasiswa_matakuliah
+      const { data: coursesData, error: coursesError } = await supabase
+        .from("mahasiswamatakuliah")
+        .select(
+          `
+          mata_kuliah_id,
+          matakuliah: mata_kuliah_id (
+            kode,
+            nama,
+            semester,
+            sks,
+            user_id
+          )
+        `
+        )
+        .eq("mahasiswa_id", profilMahasiswaId);
+
+      if (coursesError) {
+        console.error(
+          "Gagal mengambil data mata kuliah mahasiswa:",
+          coursesError.message
+        );
+        return;
+      }
+
+      // Ambil jadwal kelas untuk setiap mata kuliah dan nama dosen
+      const schedulePromises = coursesData.map(async (course) => {
+        const { data: scheduleData, error: scheduleError } = await supabase
+          .from("jadwalkelas")
+          .select(
+            `
+            jadwal_kelas_id,
+            hari,
+            waktu_mulai,
+            waktu_selesai,
+            ruangkelas: ruang_id (
+              nama
+            )
+          `
+          )
+          .eq("mata_kuliah_id", course.mata_kuliah_id);
+
+        if (scheduleError) {
+          console.error(
+            "Gagal mengambil data jadwal kelas:",
+            scheduleError.message
+          );
+          return null;
+        }
+
+        // Ambil nama dosen dari tabel users menggunakan id dari matakuliah
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("full_name")
+          .eq("id", course.matakuliah.user_id)
+          .single();
+
+        if (userError) {
+          console.error("Gagal mengambil data user:", userError.message);
+          return null;
+        }
+
+        return scheduleData.map((schedule) => ({
+          ...course,
+          day: schedule.hari,
+          time: `${schedule.waktu_mulai} s/d ${schedule.waktu_selesai}`,
+          room: schedule.ruangkelas.nama,
+          courseName: course.matakuliah.nama,
+          instructor: userData.full_name,
+        }));
+      });
+
+      const schedules = (await Promise.all(schedulePromises))
+        .flat()
+        .filter(Boolean);
+
+      setClasses(schedules);
     } catch (error) {
       console.error("Gagal mengambil data:", error.message);
     }
@@ -88,7 +145,7 @@ const PresensiMahasiswa = () => {
     try {
       const { data, error } = await supabase
         .from("presensi")
-        .select("jadwal_kelas_id")
+        .select("riwayatpresensi_id")
         .eq("user_id", userId)
         .eq("status", "Hadir");
 
@@ -98,7 +155,7 @@ const PresensiMahasiswa = () => {
       }
 
       const status = data.reduce((acc, curr) => {
-        acc[curr.jadwal_kelas_id] = true;
+        acc[curr.riwayatpresensi_id] = true;
         return acc;
       }, {});
 
@@ -270,18 +327,18 @@ const PresensiMahasiswa = () => {
             <Card
               key={index}
               className={`p-4 ${
-                item.studentPresent || attendanceStatus[item.jadwal_kelas_id]
+                item.studentPresent || attendanceStatus[item.riwayatpresensi_id]
                   ? "bg-green-100"
                   : ""
               } card`}
             >
               <div className="flex justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold">{item.course}</h2>
+                  <h2 className="text-lg font-semibold">{item.courseName}</h2>
                   <p className="text-[12px] ">{item.instructor}</p>
                 </div>
                 {item.studentPresent ||
-                attendanceStatus[item.jadwal_kelas_id] ? (
+                attendanceStatus[item.riwayatpresensi_id] ? (
                   <FaCheck className="text-green-500" />
                 ) : (
                   <button

@@ -67,14 +67,16 @@ const AccKrsDosen = () => {
       // Ambil user_id dari Profil_Mahasiswa
       const { data: mahasiswaData, error: mahasiswaError } = await supabase
         .from("profil_mahasiswa")
-        .select("user_id")
+        .select("profil_mahasiswa_id, user_id")
         .in("profil_mahasiswa_id", mahasiswaIds);
 
       if (mahasiswaError) {
         throw mahasiswaError;
       }
 
-      const mahasiswaUserIds = mahasiswaData.map((m) => m.user_id);
+      const mahasiswaIdMap = new Map(
+        mahasiswaData.map((m) => [m.user_id, m.profil_mahasiswa_id])
+      );
 
       // Ambil data KRSApproval berdasarkan dosen_dospem_id dan user_id mahasiswa
       const { data: krsData, error: krsError } = await supabase
@@ -83,8 +85,9 @@ const AccKrsDosen = () => {
           `
           approval_id,
           user_id,
-          status,
+          dosen_dospem_id,
           mata_kuliah_id,
+          status,
           matakuliah (
             kode,
             nama,
@@ -97,7 +100,7 @@ const AccKrsDosen = () => {
           )
         `
         )
-        .in("user_id", mahasiswaUserIds)
+        .in("user_id", Array.from(mahasiswaIdMap.keys()))
         .in("dosen_dospem_id", dosenDospemIds)
         .eq("status", "Pending");
 
@@ -106,15 +109,27 @@ const AccKrsDosen = () => {
       }
 
       if (krsData) {
-        setRequests(krsData);
+        setRequests(
+          krsData.map((request) => ({
+            ...request,
+            mahasiswa_id: mahasiswaIdMap.get(request.user_id),
+          }))
+        );
       }
     } catch (error) {
       console.error("Gagal mengambil data pengajuan KRS:", error.message);
     }
   };
 
-  const handleApprove = async (approvalId) => {
+  const handleApprove = async (approvalId, mahasiswaId, mataKuliahId) => {
     try {
+      console.log(
+        "mahasiswa_id:",
+        mahasiswaId,
+        "mata_kuliah_id:",
+        mataKuliahId
+      ); // Debugging log
+
       const { error } = await supabase
         .from("krsapproval")
         .update({ status: "Diterima" })
@@ -122,6 +137,15 @@ const AccKrsDosen = () => {
 
       if (error) {
         throw error;
+      }
+
+      // Insert the approved mata_kuliah into mahasiswamatakuliah table
+      const { data, error: insertError } = await supabase
+        .from("mahasiswamatakuliah")
+        .insert({ mahasiswa_id: mahasiswaId, mata_kuliah_id: mataKuliahId });
+
+      if (insertError) {
+        throw insertError;
       }
 
       setRequests(
@@ -205,7 +229,13 @@ const AccKrsDosen = () => {
                 <div className="flex flex-col gap-2">
                   <button
                     className="text-green-500"
-                    onClick={() => handleApprove(request.approval_id)}
+                    onClick={() =>
+                      handleApprove(
+                        request.approval_id,
+                        request.mahasiswa_id,
+                        request.mata_kuliah_id
+                      )
+                    }
                   >
                     <FaCheck size={24} />
                   </button>

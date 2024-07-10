@@ -1,41 +1,113 @@
-import { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import Table from "@components/atoms/Table";
 import Tour from "@components/atoms/Tour";
 import Logo from "@assets/logos/logo_up.png";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import supabase from "@/client/supabase";
 
 const TranskripNilai = () => {
-  const transkripData = [
-    {
-      semester: 1,
-      code: "IF101",
-      name: "Algoritma dan Pemrograman",
-      sks: 3,
-      nilaiAkhir: "A",
-    },
-    {
-      semester: 2,
-      code: "IF102",
-      name: "Struktur Data",
-      sks: 3,
-      nilaiAkhir: "B+",
-    },
-    {
-      semester: 2,
-      code: "IF103",
-      name: "Basis Data",
-      sks: 3,
-      nilaiAkhir: "A-",
-    },
-    {
-      semester: 3,
-      code: "IF104",
-      name: "Sistem Operasi",
-      sks: 3,
-      nilaiAkhir: "B",
-    },
-    // Tambahkan data mata kuliah lainnya sesuai kebutuhan
-  ];
+  const [transkripData, setTranskripData] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [studentInfo, setStudentInfo] = useState({
+    nama: "-",
+    tempat_lahir: "-",
+    tanggal_lahir: "-",
+    program_studi: "-",
+    fakultas: "-",
+    akreditasi: "-",
+    nim: "-",
+  });
+
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.id);
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchStudentInfo(userId);
+      fetchApprovedCourses(userId);
+    }
+  }, [userId]);
+
+  const fetchStudentInfo = async (userId) => {
+    try {
+      const { data: mahasiswaData, error: mahasiswaError } = await supabase
+        .from("profil_mahasiswa")
+        .select(
+          "nama, tempat_lahir, tanggal_lahir, program_studi, fakultas, user_id"
+        )
+        .eq("user_id", userId)
+        .single();
+
+      if (mahasiswaError) {
+        console.error(
+          "Gagal mengambil profil mahasiswa:",
+          mahasiswaError.message
+        );
+        return;
+      }
+
+      setStudentInfo({
+        nama: mahasiswaData.nama || "-",
+        tempat_lahir: mahasiswaData.tempat_lahir || "-",
+        tanggal_lahir: mahasiswaData.tanggal_lahir || "-",
+        program_studi: mahasiswaData.program_studi || "-",
+        fakultas: mahasiswaData.fakultas || "-",
+        akreditasi: "A", // You can adjust this value as needed
+        nim: userId, // Assuming userId is the same as nim
+      });
+    } catch (error) {
+      console.error("Gagal mengambil data mahasiswa:", error.message);
+    }
+  };
+
+  const fetchApprovedCourses = async (userId) => {
+    try {
+      const { data: krsData, error: krsError } = await supabase
+        .from("krsapproval")
+        .select(
+          `
+          mata_kuliah_id,
+          status,
+          matakuliah: mata_kuliah_id (
+            kode,
+            nama,
+            semester,
+            sks
+          )
+        `
+        )
+        .eq("user_id", userId)
+        .eq("status", "Diterima");
+
+      if (krsError) {
+        console.error("Gagal mengambil data KRS:", krsError.message);
+        return;
+      }
+
+      const approvedCourses = krsData.map((item) => ({
+        semester: item.matakuliah.semester,
+        code: item.matakuliah.kode,
+        name: item.matakuliah.nama,
+        sks: item.matakuliah.sks,
+        nilaiAkhir: "N/A", // Placeholder for the actual grade
+      }));
+
+      setTranskripData(approvedCourses);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error.message);
+    }
+  };
 
   const columns = [
     { header: "Semester", accessor: "semester" },
@@ -97,7 +169,7 @@ const TranskripNilai = () => {
                 <td>
                   <b>Nama</b>
                 </td>
-                <td>: Ahmad FARHAN KHOLIK</td>
+                <td>: {studentInfo.nama}</td>
                 <td>
                   <b>Jenjang Pendidikan</b>
                 </td>
@@ -107,27 +179,27 @@ const TranskripNilai = () => {
                 <td>
                   <b>NIM</b>
                 </td>
-                <td>: 2145041030</td>
+                <td>: {studentInfo.nim}</td>
                 <td>
                   <b>Program Studi</b>
                 </td>
-                <td>: Teknologi Informasi</td>
+                <td>: {studentInfo.program_studi}</td>
               </tr>
               <tr>
                 <td>
                   <b>Tempat Lahir</b>
                 </td>
-                <td>: LAMONGAN</td>
+                <td>: {studentInfo.tempat_lahir}</td>
                 <td>
                   <b>Akreditasi</b>
                 </td>
-                <td>: A</td>
+                <td>: {studentInfo.akreditasi}</td>
               </tr>
               <tr>
                 <td>
                   <b>Tanggal Lahir</b>
                 </td>
-                <td>: 2003-02-25</td>
+                <td>: {studentInfo.tanggal_lahir}</td>
               </tr>
             </tbody>
           </table>
@@ -183,7 +255,7 @@ const TranskripNilai = () => {
             padding: 4px !important;
           }
           .hidden-for-print {
-            display: flex !important; /* Menggunakan display flex saat dicetak */
+            display: flex !important; 
           }
           .print-only {
             display: block !important;

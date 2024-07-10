@@ -1,33 +1,85 @@
-import React, { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import Table from "@components/atoms/Table";
 import Tour from "@components/atoms/Tour";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import supabase from "@/client/supabase";
 
 const ListKhsMahasiswa = () => {
-  const khsData = [
-    {
-      code: "IF101",
-      name: "Algoritma dan Pemrograman",
-      sks: 3,
-      nilaiUts: 80,
-      nilaiAkhir: 85,
-    },
-    {
-      code: "IF102",
-      name: "Struktur Data",
-      sks: 3,
-      nilaiUts: 75,
-      nilaiAkhir: 82,
-    },
-    { code: "IF103", name: "Basis Data", sks: 3, nilaiUts: 85, nilaiAkhir: 88 },
-    {
-      code: "IF104",
-      name: "Sistem Operasi",
-      sks: 3,
-      nilaiUts: 78,
-      nilaiAkhir: 80,
-    },
-  ];
+  const [khsData, setKhsData] = useState([]);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const token = Cookies.get("user_session");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUserId(decodedToken.id);
+      } catch (error) {
+        console.error("Token tidak valid:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchKhsData(userId);
+    }
+  }, [userId]);
+
+  const fetchKhsData = async (userId) => {
+    try {
+      const { data: mahasiswaData, error: mahasiswaError } = await supabase
+        .from("profil_mahasiswa")
+        .select("profil_mahasiswa_id")
+        .eq("user_id", userId)
+        .single();
+
+      if (mahasiswaError) {
+        console.error(
+          "Gagal mengambil profil mahasiswa:",
+          mahasiswaError.message
+        );
+        return;
+      }
+
+      const profilMahasiswaId = mahasiswaData.profil_mahasiswa_id;
+
+      const { data: krsData, error: krsError } = await supabase
+        .from("krsapproval")
+        .select(
+          `
+          mata_kuliah_id,
+          status,
+          matakuliah: mata_kuliah_id (
+            kode,
+            nama,
+            sks
+          )
+        `
+        )
+        .eq("user_id", userId)
+        .eq("status", "Diterima");
+
+      if (krsError) {
+        console.error("Gagal mengambil data KRS:", krsError.message);
+        return;
+      }
+
+      setKhsData(
+        krsData.map((item) => ({
+          code: item.matakuliah.kode,
+          name: item.matakuliah.nama,
+          sks: item.matakuliah.sks,
+          nilaiUts: 0,
+          nilaiAkhir: 0,
+        }))
+      );
+    } catch (error) {
+      console.error("Gagal mengambil data:", error.message);
+    }
+  };
 
   const columns = [
     { header: "Kode", accessor: "code" },

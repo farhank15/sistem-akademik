@@ -89,7 +89,7 @@ const LoginFormMol = () => {
         id: data.id,
         email: data.email,
         role: data.role,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour expiration
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hour expiration
       };
 
       const secret = "your-secret-key"; // Ganti dengan kunci rahasia yang aman
@@ -102,7 +102,7 @@ const LoginFormMol = () => {
         timer: 1500,
         showConfirmButton: false,
       }).then(() => {
-        Cookies.set("user_session", token, { expires: 1 / 24 }); // Token expires in 1 hour
+        Cookies.set("user_session", token, { expires: 1 }); // Token expires in 24 hours
         // Arahkan ke halaman beranda atau halaman lain setelah login berhasil
         window.location.href = "/"; // Sesuaikan URL sesuai kebutuhan Anda
       });
